@@ -4,6 +4,7 @@ import { CardTitle } from '@/components/ui/card'
 import { toApiError } from '@/lib/http'
 
 import { JobsTable } from './components/JobsTable'
+import { PausedBanner } from './components/PausedBanner'
 import { StatusCounts } from './components/StatusCounts'
 import { UploadDropzone } from './components/UploadDropzone'
 import { useJobsOverview } from './hooks'
@@ -15,6 +16,7 @@ export function JobsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-lg font-semibold">{t('nav.jobs')}</h1>
+      <PausedBanner provider={jobs.data?.provider} />
       <StatusCounts counts={jobs.data?.counts} />
       <UploadDropzone />
       <section>

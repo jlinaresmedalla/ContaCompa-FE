@@ -59,6 +59,9 @@ export const es = {
   },
   sourceKind: { pdf_text: 'PDF digital', pdf_scanned: 'PDF escaneado', photo: 'Foto' },
   jobs: {
+    paused:
+      'Extracción en pausa: el proveedor del modelo no está disponible.{{next}} Los trabajos en cola conservan sus intentos.',
+    pausedNext: ' Próximo intento a las {{time}} (hora local).',
     upload: 'Subir archivos',
     uploadHint: 'PDF, JPEG o PNG · se aplica el límite del servidor',
     drop: 'Arrastra los comprobantes aquí, o',

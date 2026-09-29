@@ -16,9 +16,17 @@ export type JobRow = {
   doc_number: string | null
 }
 
+export type ProviderBreaker = {
+  name: string
+  state: 'closed' | 'open' | 'half_open'
+  open_until: string | null
+  reason: string | null
+}
+
 export type JobsOverview = {
   counts: Record<JobStatus, number>
   jobs: JobRow[]
+  provider?: ProviderBreaker | null
 }
 
 export type Submitted = { document_id: string; job_id: string | null; duplicate: boolean }

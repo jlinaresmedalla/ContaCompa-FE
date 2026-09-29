@@ -1,6 +1,6 @@
 # Contacompa dashboard
 
-React dashboard for the separate `Contacompa-backend` API repository. A fixed sidebar lists the modules (a static list in `src/app/modules.tsx`, the same for every company; language and theme switches sit at its bottom, and below `md` it collapses to icons). Extraction operations holds the purchase docs list and detail (observations, the original file, corrections, 50-record pages, Excel export) and a Jobs tab (upload, job status, retry); Monitor holds Costs (billed and list-price usage); Assistant is in the list but hidden. Every page except `/sign-in` needs a company API key (see Sign-in); the sidebar bottom shows the company, the time left on the key and sign-out.
+React dashboard for the separate `Contacompa-backend` API repository. A fixed sidebar lists the modules (a static list in `src/app/modules.tsx`, the same for every company; language and theme switches sit at its bottom, and below `md` it collapses to icons). Extraction operations holds the purchase docs list and detail (observations, the original file, corrections, 50-record pages, Excel export) and a Jobs tab (upload, job status, retry, and a banner with the next try time while the model provider is paused: `provider` in `/v1/monitor`, backend ADR 0021); Monitor holds Costs (billed and list-price usage); Assistant is in the list but hidden. Every page except `/sign-in` needs a company API key (see Sign-in); the sidebar bottom shows the company, the time left on the key and sign-out.
 
 ## Local setup
 
@@ -17,7 +17,7 @@ Open `http://localhost:5173`; it asks for an API key (see Sign-in).
 
 ## Sign-in
 
-There are no usernames or passwords (backend ADR 0015). The owner mints a 12-hour API key for a company with the admin key, `POST /v1/api-keys` (Swagger at `<API>/docs`, or the `curl` in the backend `docs/quickstart.md`), and hands it to the accountant, who pastes it on `/sign-in`.
+There are no usernames or passwords (backend ADR 0015). The owner mints an API key (12 hours by default, up to a week) for a company with the admin key, `POST /v1/api-keys` (Swagger at `https://contacompa.onrender.com/docs`, or the `curl` in the backend `docs/quickstart.md`), and hands it to the accountant, who pastes it on `/sign-in`.
 
 - The page checks the key with `GET /v1/me` before storing it. An invalid or expired key shows an error and stores nothing.
 - The key lives in this browser's localStorage (`doc-extraction.api-key`), so it survives reloads and is readable by any script on the page. On reload a loading state shows while `/v1/me` re-checks it.
@@ -46,7 +46,7 @@ npm test
 
 ## Deployment
 
-**Live:** `<pages-url>` on Cloudflare Pages (free plan), talking to the API at `<render-url>` (Render Free; the first request after idle is slow because the service sleeps). It needs a 12-hour API key minted by the owner; there is no demo mode.
+**Live:** `https://contacompa-fe.pages.dev` on Cloudflare Pages (free plan), talking to the API at `https://contacompa.onrender.com` (Render Free; the first request after idle is slow because the service sleeps). It needs an API key (12 hours by default, up to a week) minted by the owner; there is no demo mode.
 
 ![Demo: sign in, upload, extraction, corrections](assets/demo.gif) <!-- demo GIF placeholder: record it after the first live run -->
 
@@ -54,6 +54,6 @@ npm test
 Browser ──► Cloudflare Pages (static build of this repo) ──HTTPS + X-API-Key──► Render API + worker ──► Neon Postgres + Object Storage
 ```
 
-Pages settings: build command `npm run build`, output directory `dist`, Node from `.nvmrc`, and the environment variable `VITE_API_URL=<render-url>`. It is read at build time (`src/app/config/env.ts`), so changing it needs a new build. `public/_redirects` (`/* /index.html 200`) is copied to `dist` so deep links such as `/extraction/purchase-docs/<id>` load the app instead of a 404. The API must list the Pages origin in its `CORS_ORIGINS` (a JSON list, for example `["<pages-url>"]`); see the backend repository's deployment notes.
+Pages settings: build command `npm run build`, output directory `dist`, Node from `.nvmrc`, and the environment variable `VITE_API_URL=https://contacompa.onrender.com`. It is read at build time (`src/app/config/env.ts`), so changing it needs a new build. `public/_redirects` (`/* /index.html 200`) is copied to `dist` so deep links such as `/extraction/purchase-docs/<id>` load the app instead of a 404. The API must list the Pages origin in its `CORS_ORIGINS` (a JSON list, for example `["https://contacompa-fe.pages.dev"]`); see the backend repository's deployment notes.
 
 The app groups API calls, query keys, hooks, and page components under `src/features/{documents,jobs,costs,session}` (`documents` and `jobs` belong to Extraction operations, `costs` to Monitor, `session` owns the stored key, `/v1/me`, sign-in, the private-route guard and the sidebar session panel). The `/v1/monitor` endpoint keeps its name; the `jobs` feature reads it. Shared UI lives in `src/components`; HTTP and formatting helpers live in `src/lib`.

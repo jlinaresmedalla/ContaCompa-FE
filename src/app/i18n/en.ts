@@ -60,6 +60,9 @@ export const en: Messages = {
   },
   sourceKind: { pdf_text: 'Digital PDF', pdf_scanned: 'Scanned PDF', photo: 'Photo' },
   jobs: {
+    paused:
+      'Extraction paused: the model provider is unavailable.{{next}} Queued jobs keep their attempts.',
+    pausedNext: ' Next try at {{time}} (local time).',
     upload: 'Upload files',
     uploadHint: 'PDF, JPEG or PNG · server size limit applies',
     drop: 'Drop purchase docs here, or',
