@@ -11,6 +11,8 @@ import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
 import type { Theme } from '@/lib/theme'
 
+const VISIBLE_TOAST_COUNT = 3
+
 function readTheme(): Theme {
   const theme = document.documentElement.dataset.theme
   return theme === 'light' || theme === 'dark' ? theme : 'system'
@@ -29,7 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme}
       position="bottom-right"
-      visibleToasts={3}
+      visibleToasts={VISIBLE_TOAST_COUNT}
       closeButton={false}
       containerAriaLabel={t('notifications.region')}
       toastOptions={{

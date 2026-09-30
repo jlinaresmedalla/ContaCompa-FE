@@ -7,8 +7,12 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { i18n } from '@/app/i18n'
 import { Toaster } from '@/components/ui/sonner'
 
-import { jobsApi } from '../api'
+import { JOBS_API } from '../api'
 import { UploadDropzone } from './UploadDropzone'
+
+const UPLOAD_TOAST_TIMEOUT_MS = 6000
+const INVALID_UPLOAD_STATUS = 422
+const FAILED_UPLOAD_TIMEOUT_MS = 500
 
 beforeEach(async () => {
   await i18n.changeLanguage('en')
@@ -46,7 +50,7 @@ function uploadFile() {
 }
 
 test('a successful upload shows a polite success toast and keeps its item badge', async () => {
-  const upload = vi.spyOn(jobsApi, 'upload').mockResolvedValue({
+  const upload = vi.spyOn(JOBS_API, 'upload').mockResolvedValue({
     document_id: 'document-1',
     job_id: 'job-1',
     duplicate: false,
@@ -58,16 +62,16 @@ test('a successful upload shows a polite success toast and keeps its item badge'
   expect(screen.getByLabelText(/Notifications/)).toHaveAttribute('aria-live', 'polite')
   expect(screen.queryByRole('button', { name: 'Dismiss notification' })).toBeNull()
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(6000)
+    await vi.advanceTimersByTimeAsync(UPLOAD_TOAST_TIMEOUT_MS)
   })
   await waitFor(() => expect(screen.queryByText('File uploaded: purchase.pdf')).toBeNull())
 })
 
 test('a failed upload announces readable API text assertively and stays after six seconds', async () => {
   const config = { headers: new AxiosHeaders() }
-  vi.spyOn(jobsApi, 'upload').mockRejectedValue(
+  vi.spyOn(JOBS_API, 'upload').mockRejectedValue(
     new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, undefined, {
-      status: 422,
+      status: INVALID_UPLOAD_STATUS,
       statusText: 'Unprocessable Entity',
       config,
       headers: {},
@@ -77,12 +81,12 @@ test('a failed upload announces readable API text assertively and stays after si
   uploadFile()
   expect(await screen.findByRole('alert')).toHaveTextContent('This PDF could not be read.')
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(6000)
+    await vi.advanceTimersByTimeAsync(UPLOAD_TOAST_TIMEOUT_MS)
   })
   expect(screen.getByRole('alert')).toHaveTextContent('This PDF could not be read.')
   fireEvent.click(screen.getByRole('button', { name: 'Dismiss notification' }))
   await act(async () => {
-    await vi.advanceTimersByTimeAsync(500)
+    await vi.advanceTimersByTimeAsync(FAILED_UPLOAD_TIMEOUT_MS)
   })
   await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
 })

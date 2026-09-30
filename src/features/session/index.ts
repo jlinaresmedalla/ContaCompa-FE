@@ -1,4 +1,4 @@
-export { sessionApi, sessionKeys } from './api'
+export { SESSION_API, SESSION_KEYS } from './api'
 export { PrivateRoute } from './PrivateRoute'
 export { handleUnauthorized } from './session'
 export { SessionPanel } from './SessionPanel'

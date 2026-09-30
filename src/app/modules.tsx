@@ -2,7 +2,7 @@ import { Activity, FileText, MessageCircle } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import type { Messages } from '@/app/i18n/en'
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 
 type NavKey = `nav.${keyof Messages['nav']}`
 
@@ -20,41 +20,41 @@ export type AppModule = {
 }
 
 /** The same list for every company (backend ADR 0016). Adding a module is a code change. */
-export const modules: AppModule[] = [
+export const MODULES: AppModule[] = [
   {
     id: 'extraction',
     labelKey: 'nav.extraction',
     icon: <FileText className="size-5 shrink-0" aria-hidden="true" />,
-    prefix: paths.extraction,
+    prefix: PATHS.extraction,
     visible: true,
     pages: [
-      { to: paths.purchaseDocs, labelKey: 'nav.purchaseDocs' },
-      { to: paths.jobs, labelKey: 'nav.jobs' },
+      { to: PATHS.purchaseDocs, labelKey: 'nav.purchaseDocs' },
+      { to: PATHS.jobs, labelKey: 'nav.jobs' },
     ],
   },
   {
     id: 'monitor',
     labelKey: 'nav.monitor',
     icon: <Activity className="size-5 shrink-0" aria-hidden="true" />,
-    prefix: paths.monitor,
+    prefix: PATHS.monitor,
     visible: true,
-    pages: [{ to: paths.costs, labelKey: 'nav.costs' }],
+    pages: [{ to: PATHS.costs, labelKey: 'nav.costs' }],
   },
   {
     id: 'assistant',
     labelKey: 'nav.assistant',
     icon: <MessageCircle className="size-5 shrink-0" aria-hidden="true" />,
-    prefix: paths.assistant,
+    prefix: PATHS.assistant,
     visible: false,
     pages: [],
   },
 ]
 
-export const visibleModules = modules.filter((module) => module.visible)
+export const VISIBLE_MODULES = MODULES.filter((module) => module.visible)
 
 /** The module owning a pathname, or undefined for paths outside every prefix. */
 export function moduleFor(pathname: string): AppModule | undefined {
-  return visibleModules.find(
+  return VISIBLE_MODULES.find(
     (module) => pathname === module.prefix || pathname.startsWith(`${module.prefix}/`),
   )
 }

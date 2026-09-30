@@ -1,13 +1,13 @@
-import { Upload } from 'lucide-react'
+import { Upload, RotateCcw } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 import { Badge, type BadgeTone } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { DataTable } from '@/components/ui/data-table'
 import { dateTime, seconds } from '@/lib/format'
@@ -15,7 +15,7 @@ import { dateTime, seconds } from '@/lib/format'
 import { useRetryJob } from '../hooks'
 import type { JobRow, JobStatus } from '../types'
 
-const statusTone: Record<JobStatus, BadgeTone> = {
+const STATUS_TONE: Record<JobStatus, BadgeTone> = {
   queued: 'neutral',
   processing: 'info',
   done: 'success',
@@ -27,14 +27,13 @@ function RetryButton({ jobId }: { jobId: string }) {
   const { t } = useTranslation()
   const retry = useRetryJob()
   return (
-    <Button
-      size="sm"
+    <IconButton
+      icon={RotateCcw}
+      label={t('common.retry')}
       variant="outline"
       disabled={retry.isPending}
       onClick={() => retry.mutate(jobId)}
-    >
-      {t('common.retry')}
-    </Button>
+    />
   )
 }
 
@@ -54,7 +53,7 @@ function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[
       header: t('jobs.columns.status'),
       cell: ({ row }) => (
         <div className="flex flex-col gap-1">
-          <Badge tone={statusTone[row.original.status]}>
+          <Badge tone={STATUS_TONE[row.original.status]}>
             {t(`jobStatus.${row.original.status}`)}
           </Badge>
           {row.original.last_error ? (
@@ -79,7 +78,7 @@ function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[
         if (!id) return <span className="text-muted-foreground">—</span>
         return (
           <Link
-            to={paths.purchaseDoc(id)}
+            to={PATHS.purchaseDoc(id)}
             className="flex items-center gap-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
           >
             <span className="font-medium text-primary">{doc_number ?? t('common.open')}</span>
@@ -125,7 +124,7 @@ export function JobsTable({
           icon={Upload}
           title={t('pageStates.jobsTitle')}
           description={t('pageStates.jobsDescription')}
-          action={<Button onClick={onUpload}>{t('pageStates.upload')}</Button>}
+          action={<IconButton icon={Upload} label={t('pageStates.upload')} onClick={onUpload} />}
         />
       }
       getRowId={(row) => row.job_id}

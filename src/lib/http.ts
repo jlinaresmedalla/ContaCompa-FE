@@ -1,10 +1,13 @@
 import axios, { isAxiosError, isCancel } from 'axios'
 
-import { env } from '@/app/config/env'
+import { ENV } from '@/app/config/env'
 import { i18n } from '@/app/i18n'
-import { apiKeyStore } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/api-key'
 
-export const http = axios.create({ baseURL: env.apiUrl, timeout: 180_000 })
+const REQUEST_TIMEOUT_MS = 180_000
+const UNAUTHORIZED_STATUS = 401
+
+export const http = axios.create({ baseURL: ENV.apiUrl, timeout: REQUEST_TIMEOUT_MS })
 let companyRequests = new AbortController()
 
 function anySignal(a: AbortSignal, b: AbortSignal): AbortSignal {
@@ -27,7 +30,7 @@ http.interceptors.request.use((config) => {
   config.signal = config.signal
     ? anySignal(config.signal as AbortSignal, companyRequests.signal)
     : companyRequests.signal
-  const key = apiKeyStore.get()
+  const key = API_KEY_STORE.get()
   // A request may carry its own key (sign-in checks a candidate before storing it).
   if (key && !config.headers.has('X-API-Key')) config.headers.set('X-API-Key', key)
   return config
@@ -43,9 +46,9 @@ export function setUnauthorizedHandler(handler: () => void): void {
 // A 401 on the stored key ends the session. A candidate key being checked at sign-in, or a
 // request that was sent with an older key, is not the session's key and does not.
 http.interceptors.response.use(undefined, (error: unknown) => {
-  if (isAxiosError(error) && error.response?.status === 401) {
+  if (isAxiosError(error) && error.response?.status === UNAUTHORIZED_STATUS) {
     const sent = error.config?.headers.get('X-API-Key')
-    if (sent && sent === apiKeyStore.get()) onUnauthorized()
+    if (sent && sent === API_KEY_STORE.get()) onUnauthorized()
   }
   throw error
 })
@@ -69,7 +72,7 @@ export function toApiError(error: unknown): ApiError {
       status,
       code: body?.code,
       message:
-        status === 401
+        status === UNAUTHORIZED_STATUS
           ? i18n.t('errors.apiKey')
           : (body?.message ??
             (status ? i18n.t('errors.requestFailed', { status }) : i18n.t('errors.unreachable'))),

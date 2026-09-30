@@ -1,31 +1,33 @@
+import { SidebarSection } from './SidebarSection'
 import type { ColumnDef } from '@tanstack/react-table'
 import { FileText, Plus } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
+import { useDesignSelect } from './use-design-select'
 import { useTranslation } from 'react-i18next'
 
 import type { Messages } from '@/app/i18n/en'
 import { Logo, LogoMark } from '@/components/brand'
+import { Backdrop } from '@/components/ui/backdrop'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { Card, Stat } from '@/components/ui/card'
 import { DataTable } from '@/components/ui/data-table'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Field, Input } from '@/components/ui/input'
 import { PageHeader } from '@/components/ui/page-header'
 import { Segmented } from '@/components/ui/segmented'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { AppSelect } from '@/components/ui/app-select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { notifyError, notifySuccess } from '@/lib/notify'
 
+const SHORT_SKELETON_WIDTH = 16
+const MEDIUM_SKELETON_WIDTH = 32
+const LONG_SKELETON_WIDTH = 48
+
 export function ComponentSections() {
   const { t } = useTranslation()
-  const [selected, setSelected] = useState('invoice')
+  const { selected, setSelected, multiple, setMultiple } = useDesignSelect()
   const columns: ColumnDef<{ number: string; type: string; total: string }>[] = [
     { accessorKey: 'number', header: t('documents.columns.number') },
     { accessorKey: 'type', header: t('documents.columns.type') },
@@ -56,6 +58,17 @@ export function ComponentSections() {
   }
   return (
     <div className="space-y-10">
+      <SidebarSection />
+      {section(
+        'Backdrop',
+        <div className="relative isolate rounded-2xl p-8">
+          <Backdrop />
+          <Card className="material mx-auto max-w-sm">
+            <p className="font-semibold">{t('design.sample')}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{t('design.description')}</p>
+          </Card>
+        </div>,
+      )}
       {section(
         'Button',
         <div className="space-y-4">
@@ -85,6 +98,20 @@ export function ComponentSections() {
         </div>,
       )}
       {section(
+        'IconButton',
+        <div className="flex flex-wrap gap-3">
+          {(['primary', 'outline', 'ghost', 'danger', 'success'] as const).map((variant) => (
+            <IconButton
+              key={variant}
+              icon={Plus}
+              variant={variant}
+              label={`${t(`design.${variant}`)} · ${t('design.icon')}`}
+            />
+          ))}
+          <IconButton icon={Plus} label={t('design.disabled')} disabled />
+        </div>,
+      )}
+      {section(
         'Input',
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('design.normal')}>
@@ -104,23 +131,40 @@ export function ComponentSections() {
       {section(
         'Select',
         <div className="max-w-sm space-y-3">
-          <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger aria-label={t('detail.fields.doc_type')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(['invoice', 'sales_receipt', 'credit_note'] as const).map((value) => (
-                <SelectItem key={value} value={value}>
-                  {t(`docType.${value}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select disabled>
-            <SelectTrigger aria-label={t('design.disabled')}>
-              <SelectValue placeholder={t('design.disabled')} />
-            </SelectTrigger>
-          </Select>
+          <AppSelect
+            label={t('detail.fields.doc_type')}
+            value={selected}
+            onChange={setSelected}
+            options={(['invoice', 'sales_receipt', 'credit_note'] as const).map((value) => ({
+              value,
+              label: t(`docType.${value}`),
+            }))}
+          />
+          <AppSelect
+            label={t('design.disabled')}
+            value={null}
+            onChange={setSelected}
+            options={[]}
+            disabled
+          />
+          <AppSelect
+            label={t('design.error')}
+            value={selected}
+            onChange={setSelected}
+            options={[{ value: 'invoice', label: t('docType.invoice') }]}
+            error={t('design.error')}
+          />
+          <AppSelect
+            multiple
+            searchable
+            label={t('design.normal')}
+            value={multiple}
+            onChange={setMultiple}
+            options={(['invoice', 'sales_receipt', 'credit_note'] as const).map((value) => ({
+              value,
+              label: t(`docType.${value}`),
+            }))}
+          />
         </div>,
       )}
       {section(
@@ -204,7 +248,9 @@ export function ComponentSections() {
                 ['size-4 text-primary', 'size-8 text-primary', 'size-12 text-primary'][index]
               }
             />
-            <span className="text-xs text-muted-foreground">{[16, 32, 48][index]} px</span>
+            <span className="text-xs text-muted-foreground">
+              {[SHORT_SKELETON_WIDTH, MEDIUM_SKELETON_WIDTH, LONG_SKELETON_WIDTH][index]} px
+            </span>
           </div>
         ))}
       </section>

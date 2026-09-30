@@ -1,8 +1,10 @@
-import { ChartNoAxesCombined } from 'lucide-react'
+import { ChartNoAxesCombined, Upload } from 'lucide-react'
 import { Link } from 'react-router'
 import { Trans, useTranslation } from 'react-i18next'
 
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
+import { AppSelect } from '@/components/ui/app-select'
+import { useCostPeriod } from './use-cost-period'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PageHeader } from '@/components/ui/page-header'
@@ -16,20 +18,39 @@ import { DailyChart } from './components/DailyChart'
 import { useCostReport } from './hooks'
 import type { CostLine } from './types'
 
+const BILLED_USD_DIGITS = 2
+const PER_DOCUMENT_USD_DIGITS = 5
+const QUOTE_DOCUMENT_COUNT = 1000
+const MODEL_SKELETON_COUNT = 5
+
 export function CostsPage() {
   const { t } = useTranslation()
-  const report = useCostReport(30)
+  const { period, setPeriod, days, options } = useCostPeriod()
+  const report = useCostReport(days)
   const data = report.data
   const summary = (line: CostLine) =>
     t('costs.summary', {
       docs: line.docs,
       tokens: number(line.input_tokens + line.output_tokens),
-      billed: usd(line.billed_usd, 2),
+      billed: usd(line.billed_usd, BILLED_USD_DIGITS),
     })
   const columns = ['model', 'docs', 'input', 'output', 'billed', 'list', 'perDoc'] as const
   return (
     <div className="space-y-6">
-      <PageHeader title={t('nav.costs')} description={t('pageStates.costs')} />
+      <PageHeader
+        title={t('nav.costs')}
+        description={t('pageStates.costs')}
+        actions={
+          <div className="w-44">
+            <AppSelect
+              label={t('costs.period')}
+              value={period}
+              onChange={setPeriod}
+              options={options}
+            />
+          </div>
+        }
+      />
       {report.error && !data ? (
         <ErrorNote message={toApiError(report.error).message} />
       ) : data?.total.docs === 0 ? (
@@ -40,7 +61,10 @@ export function CostsPage() {
             description={t('pageStates.costsDescription')}
             action={
               <Button asChild>
-                <Link to={paths.jobs}>{t('pageStates.upload')}</Link>
+                <Link to={PATHS.jobs}>
+                  <Upload aria-hidden="true" className="size-4" />
+                  {t('pageStates.upload')}
+                </Link>
               </Button>
             }
           />
@@ -71,18 +95,27 @@ export function CostsPage() {
             />
             <Stat
               label={t('costs.perDoc')}
-              value={data ? usd(data.total.list_usd_per_doc, 5) : <Skeleton className="h-8 w-24" />}
+              value={
+                data ? (
+                  usd(data.total.list_usd_per_doc, PER_DOCUMENT_USD_DIGITS)
+                ) : (
+                  <Skeleton className="h-8 w-24" />
+                )
+              }
               sub={
                 data
                   ? t('costs.per1000', {
-                      value: usd(Number(data.total.list_usd_per_doc) * 1000, 2),
+                      value: usd(
+                        Number(data.total.list_usd_per_doc) * QUOTE_DOCUMENT_COUNT,
+                        BILLED_USD_DIGITS,
+                      ),
                     })
                   : null
               }
             />
           </div>
           <Card>
-            <CardTitle hint={t('costs.last30')}>{t('costs.perDay')}</CardTitle>
+            <CardTitle hint={t('costs.lastDays', { count: days })}>{t('costs.perDay')}</CardTitle>
             {data ? <DailyChart days={data.by_day} /> : <Skeleton className="h-48 w-full" />}
           </Card>
           <Card>
@@ -107,7 +140,7 @@ export function CostsPage() {
                 </thead>
                 <tbody className="tabular-nums">
                   {report.isLoading
-                    ? Array.from({ length: 5 }, (_, i) => (
+                    ? Array.from({ length: MODEL_SKELETON_COUNT }, (_, i) => (
                         <tr key={i}>
                           {columns.map((column) => (
                             <td
@@ -134,7 +167,9 @@ export function CostsPage() {
                       <td className="py-1.5 text-right">{number(row.output_tokens)}</td>
                       <td className="py-1.5 text-right">{usd(row.billed_usd)}</td>
                       <td className="py-1.5 text-right">{usd(row.list_usd)}</td>
-                      <td className="py-1.5 text-right">{usd(row.list_usd_per_doc, 5)}</td>
+                      <td className="py-1.5 text-right">
+                        {usd(row.list_usd_per_doc, PER_DOCUMENT_USD_DIGITS)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

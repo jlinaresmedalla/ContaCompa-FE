@@ -1,47 +1,118 @@
 import { Navigate, type RouteObject } from 'react-router'
 
-import { visibleModules } from '@/app/modules'
-import { paths } from '@/app/router/paths'
-import { AppLayout } from '@/components/layout/AppLayout'
+import { VISIBLE_MODULES } from '@/app/modules'
+import { PATHS } from '@/app/router/paths'
 import { PublicLayout } from '@/components/layout/PublicLayout'
-import { DesignPage } from '@/features/design'
-import { CostsPage } from '@/features/costs'
-import { DocumentDetailPage, DocumentsPage } from '@/features/documents'
-import { HomePage } from '@/features/home'
-import { JobsPage } from '@/features/jobs'
-import { PrivateRoute, SignInPage } from '@/features/session'
-import { apiKeyStore } from '@/lib/api-key'
+import { PageSkeleton } from '@/components/loading/PageSkeleton'
+import { lazyPage } from '@/lib/lazyPage'
+import { API_KEY_STORE } from '@/lib/api-key'
+
+const SessionLayout = lazyPage<object>(
+  async () => {
+    const module = await import('@/features/session/SessionLayout')
+    return { default: module.SessionLayout }
+  },
+  <PageSkeleton />,
+)
+const AppLayout = lazyPage<object>(
+  async () => {
+    const module = await import('@/components/layout/AppLayout')
+    return { default: module.AppLayout }
+  },
+  <PageSkeleton />,
+)
+const PrivateRoute = lazyPage<object>(
+  async () => {
+    const module = await import('@/features/session/PrivateRoute')
+    return { default: module.PrivateRoute }
+  },
+  <PageSkeleton />,
+)
+const HomePage = lazyPage(
+  async () => {
+    const module = await import('@/features/home/HomePage')
+    return { default: module.HomePage }
+  },
+  <PageSkeleton />,
+)
+const DesignPage = lazyPage(
+  async () => {
+    const module = await import('@/features/design/DesignPage')
+    return { default: module.DesignPage }
+  },
+  <PageSkeleton />,
+)
+const SignInPage = lazyPage(
+  async () => {
+    const module = await import('@/features/session/SignInPage')
+    return { default: module.SignInPage }
+  },
+  <PageSkeleton />,
+)
+const DocumentsPage = lazyPage(
+  async () => {
+    const module = await import('@/features/documents/DocumentsPage')
+    return { default: module.DocumentsPage }
+  },
+  <PageSkeleton />,
+)
+const DocumentDetailPage = lazyPage(
+  async () => {
+    const module = await import('@/features/documents/DocumentDetailPage')
+    return { default: module.DocumentDetailPage }
+  },
+  <PageSkeleton />,
+)
+const JobsPage = lazyPage(
+  async () => {
+    const module = await import('@/features/jobs/JobsPage')
+    return { default: module.JobsPage }
+  },
+  <PageSkeleton />,
+)
+const CostsPage = lazyPage(
+  async () => {
+    const module = await import('@/features/costs/CostsPage')
+    return { default: module.CostsPage }
+  },
+  <PageSkeleton />,
+)
 
 function UnknownPath() {
-  return <Navigate to={apiKeyStore.get() ? paths.purchaseDocs : paths.home} replace />
+  return <Navigate to={API_KEY_STORE.get() ? PATHS.purchaseDocs : PATHS.home} replace />
 }
 
-export const routes: RouteObject[] = [
+export const ROUTES: RouteObject[] = [
   {
     element: <PublicLayout />,
     children: [
-      { path: paths.home, element: <HomePage /> },
-      { path: paths.design, element: <DesignPage /> },
+      { path: PATHS.home, element: <HomePage /> },
+      { path: PATHS.design, element: <DesignPage /> },
     ],
   },
   { path: '*', element: <UnknownPath /> },
-  { path: paths.signIn, element: <SignInPage /> },
   {
-    // Dashboard routes need a key that /v1/me accepted.
-    element: <PrivateRoute />,
+    element: <SessionLayout />,
     children: [
+      { path: PATHS.signIn, element: <SignInPage /> },
       {
-        element: <AppLayout />,
+        // Dashboard routes need a key that /v1/me accepted.
+        element: <PrivateRoute />,
         children: [
-          // A bare module prefix opens the module's first page.
-          ...visibleModules.map((module) => ({
-            path: module.prefix,
-            element: <Navigate to={module.pages[0]?.to ?? paths.purchaseDocs} replace />,
-          })),
-          { path: paths.purchaseDocs, element: <DocumentsPage /> },
-          { path: `${paths.purchaseDocs}/:id`, element: <DocumentDetailPage /> },
-          { path: paths.jobs, element: <JobsPage /> },
-          { path: paths.costs, element: <CostsPage /> },
+          {
+            element: <AppLayout />,
+            children: [
+              // A bare module prefix opens the module's first page.
+              ...VISIBLE_MODULES.map((module) => ({
+                path: module.prefix,
+                element: <Navigate to={module.pages[0]?.to ?? PATHS.purchaseDocs} replace />,
+              })),
+              { path: PATHS.purchaseDocs, element: <DocumentsPage /> },
+              { path: `${PATHS.purchaseDocs}/:id`, element: <DocumentDetailPage /> },
+              { path: PATHS.jobs, element: <JobsPage /> },
+              { path: PATHS.costs, element: <CostsPage /> },
+            ],
+          },
         ],
       },
     ],

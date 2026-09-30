@@ -1,0 +1,48 @@
+export const EN_JOBS = {
+  jobs: {
+    paused:
+      'Extraction paused: the model provider is unavailable.{{next}} Waiting does not use up job attempts.',
+    pausedNext: ' Next attempt at {{time}} (local time).',
+    upload: 'Upload files',
+    uploadHint: 'PDF or photo (JPEG or PNG) · size limit set by the server',
+    drop: 'Drop files here or',
+    choose: 'Choose files',
+    uploading: 'Uploading…',
+    chooseLabel: 'Choose files to upload',
+    latest: 'Recent jobs',
+    refreshing: 'Updates every 2 seconds · {{count}} active',
+    idle: 'No active jobs',
+    empty: 'No uploads yet.',
+    uploadState: {
+      uploading: 'Uploading',
+      queued: 'Queued',
+      duplicate: 'Duplicate',
+      error: 'Error',
+    },
+    columns: {
+      file: 'File',
+      kind: 'File kind',
+      status: 'Status',
+      attempts: 'Attempts',
+      uploaded: 'Uploaded',
+      took: 'Duration',
+      document: 'Purchase doc',
+    },
+    observations_one: '{{count}} observation',
+    observations_other: '{{count}} observations',
+  },
+  jobStatus: {
+    queued: 'Queued',
+    processing: 'Processing',
+    done: 'Ready',
+    failed: 'Retrying',
+    dead: 'Failed',
+  },
+  jobStatusHint: {
+    queued: 'Waiting to start',
+    processing: 'Gemini is reading the file',
+    done: 'Purchase doc created',
+    failed: 'Will retry automatically',
+    dead: 'No retries left',
+  },
+}

@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 
-import architecture from '../assets/architecture.png'
+import { Skeleton } from '@/components/ui/skeleton'
+import { lazyPage } from '@/lib/lazyPage'
+
+const ArchitectureView = lazyPage<object>(
+  () => import('./ArchitectureView').then((module) => ({ default: module.ArchitectureView })),
+  <Skeleton className="h-96 w-full" />,
+)
 
 export function Architecture() {
   const { t } = useTranslation()
@@ -18,14 +24,7 @@ export function Architecture() {
       </h2>
       <p className="mt-3 text-muted-foreground">{t('home.architectureIntro')}</p>
       <Card className="mt-6 min-w-0 overflow-hidden">
-        <img
-          src={architecture}
-          alt={t('home.architectureAlt')}
-          loading="lazy"
-          width={2480}
-          height={1304}
-          className="h-auto max-w-full"
-        />
+        <ArchitectureView />
       </Card>
       <ul aria-label={t('home.stackLabel')} className="mt-4 flex flex-wrap gap-2">
         {(['fastapi', 'postgres', 'gemini', 'react', 'render', 'neon', 'cloudflare'] as const).map(

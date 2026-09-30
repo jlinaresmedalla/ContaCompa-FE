@@ -1,12 +1,14 @@
 import { useTranslation } from 'react-i18next'
 
 import { PublicMainButton } from '@/components/layout/PublicLayout'
+import { Backdrop } from '@/components/ui/backdrop'
 import { Button } from '@/components/ui/button'
 
 export function Hero() {
   const { t } = useTranslation()
   return (
-    <section className="mx-auto max-w-4xl text-center">
+    <section className="relative isolate mx-auto max-w-4xl rounded-2xl px-4 py-12 text-center">
+      <Backdrop />
       <h1 className="text-5xl font-bold tracking-tighter sm:text-7xl">
         {t('home.headline')} <span className="text-primary">{t('home.headlineAccent')}</span>
       </h1>

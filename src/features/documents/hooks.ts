@@ -6,10 +6,10 @@ import { useSearchParams } from 'react-router'
 import { toApiError } from '@/lib/http'
 import { notifyError, notifySuccess } from '@/lib/notify'
 
-import { documentApi, documentKeys } from './api'
+import { DOCUMENT_API, DOCUMENT_KEYS } from './api'
 import type { CorrectionPayload, ListFilters, ObservationFilter } from './types'
 
-const FILTERS: ObservationFilter[] = ['all', 'warning', 'any', 'none']
+export const OBSERVATION_FILTERS: readonly ObservationFilter[] = ['all', 'warning', 'any', 'none']
 
 /** List filters live in the URL (?obs=warning&code=amount_mismatch): shareable and reload-safe. */
 export function useListFilters(): [
@@ -21,7 +21,7 @@ export function useListFilters(): [
   const [params, setParams] = useSearchParams()
   const raw = params.get('obs')
   const filters: ListFilters = {
-    observations: FILTERS.find((candidate) => candidate === raw) ?? 'all',
+    observations: OBSERVATION_FILTERS.find((candidate) => candidate === raw) ?? 'all',
     code: params.get('code'),
   }
   const setFilters = (next: ListFilters) => {
@@ -42,37 +42,37 @@ export function useListFilters(): [
 
 export function usePurchaseDocs(filters: ListFilters, offset: number) {
   return useQuery({
-    queryKey: documentKeys.list(filters, offset),
-    queryFn: ({ signal }) => documentApi.list(filters, offset, signal),
+    queryKey: DOCUMENT_KEYS.list(filters, offset),
+    queryFn: ({ signal }) => DOCUMENT_API.list(filters, offset, signal),
   })
 }
 
 export function useObservationReport() {
   return useQuery({
-    queryKey: documentKeys.report(),
-    queryFn: ({ signal }) => documentApi.report(signal),
+    queryKey: DOCUMENT_KEYS.report(),
+    queryFn: ({ signal }) => DOCUMENT_API.report(signal),
   })
 }
 
 export function usePurchaseDoc(id: string) {
   return useQuery({
-    queryKey: documentKeys.detail(id),
-    queryFn: ({ signal }) => documentApi.getById(id, signal),
+    queryKey: DOCUMENT_KEYS.detail(id),
+    queryFn: ({ signal }) => DOCUMENT_API.getById(id, signal),
   })
 }
 
 /** An object URL for the original upload, revoked when the blob changes or on unmount. */
 export function useFileUrl(documentId: string) {
   const query = useQuery({
-    queryKey: documentKeys.file(documentId),
-    queryFn: ({ signal }) => documentApi.file(documentId, signal),
+    queryKey: DOCUMENT_KEYS.file(documentId),
+    queryFn: ({ signal }) => DOCUMENT_API.file(documentId, signal),
   })
   const [url, setUrl] = useState<string | null>(null)
   useEffect(() => {
     if (!query.data) return
     const next = URL.createObjectURL(query.data)
     // Syncing with a browser resource (object URLs), not deriving state.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Object URLs need effect cleanup.
     setUrl(next)
     return () => URL.revokeObjectURL(next)
   }, [query.data])
@@ -83,9 +83,9 @@ function useInvalidateDoc() {
   const queryClient = useQueryClient()
   return (id: string) =>
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: documentKeys.detail(id) }),
-      queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
-      queryClient.invalidateQueries({ queryKey: documentKeys.report() }),
+      queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.detail(id) }),
+      queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.lists() }),
+      queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.report() }),
     ])
 }
 
@@ -93,7 +93,7 @@ export function useCorrectDoc(id: string) {
   const { t } = useTranslation()
   const invalidate = useInvalidateDoc()
   return useMutation({
-    mutationFn: (payload: CorrectionPayload) => documentApi.correct(id, payload),
+    mutationFn: (payload: CorrectionPayload) => DOCUMENT_API.correct(id, payload),
     onSuccess: () => {
       notifySuccess(t('notifications.corrected'))
       return invalidate(id)
@@ -105,12 +105,12 @@ export function useCorrectDoc(id: string) {
 export function useDeleteDoc() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => documentApi.remove(id),
+    mutationFn: (id: string) => DOCUMENT_API.remove(id),
     onSuccess: async (_data, id) => {
-      queryClient.removeQueries({ queryKey: documentKeys.detail(id) })
+      queryClient.removeQueries({ queryKey: DOCUMENT_KEYS.detail(id) })
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: documentKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: documentKeys.report() }),
+        queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.lists() }),
+        queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.report() }),
         queryClient.invalidateQueries({ queryKey: ['monitor'] }),
       ])
     },
@@ -121,7 +121,7 @@ export function useExportXlsx() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (language: string) => documentApi.exportXlsx(language),
+    mutationFn: (language: string) => DOCUMENT_API.exportXlsx(language),
     onSuccess: async ({ blob, count }) => {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
@@ -130,7 +130,7 @@ export function useExportXlsx() {
       link.click()
       URL.revokeObjectURL(url)
       notifySuccess(t('notifications.exported', { count }))
-      await queryClient.invalidateQueries({ queryKey: documentKeys.all })
+      await queryClient.invalidateQueries({ queryKey: DOCUMENT_KEYS.all })
     },
     onError: (error) => notifyError(toApiError(error).message),
   })

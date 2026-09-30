@@ -3,12 +3,14 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { http } from '@/lib/http'
 
 import { DesignPage } from './DesignPage'
 import { TokenSections } from './components/TokenSections'
+
+const TOKEN_LAYER_COUNT = 2
 
 beforeEach(() => {
   localStorage.clear()
@@ -25,17 +27,21 @@ test('Design renders every shared component section without HTTP requests', asyn
   const xhr = vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(() => {})
   const fetch = vi.spyOn(globalThis, 'fetch').mockImplementation(request)
   render(
-    <MemoryRouter initialEntries={[paths.design]}>
+    <MemoryRouter initialEntries={[PATHS.design]}>
       <Routes>
         <Route element={<PublicLayout />}>
-          <Route path={paths.design} element={<DesignPage />} />
+          <Route path={PATHS.design} element={<DesignPage />} />
         </Route>
       </Routes>
     </MemoryRouter>,
   )
   expect(screen.getByRole('heading', { name: 'Design system', level: 1 })).toBeInTheDocument()
   for (const name of [
+    'Brand backdrop',
+    'Sidebar and company avatar',
+    'Company avatar',
     'Button',
+    'Icon button with tooltip',
     'Input',
     'Select',
     'Badge',
@@ -48,8 +54,15 @@ test('Design renders every shared component section without HTTP requests', asyn
     'Toast',
     'PageHeader',
   ]) {
-    expect(screen.getByRole('heading', { name, level: 2 })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name, level: TOKEN_LAYER_COUNT }),
+    ).toBeInTheDocument()
   }
+  expect(screen.getByText('--backdrop-primary')).toBeInTheDocument()
+  expect(screen.getByText('--backdrop-amber')).toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: 'Primary · Icon button' }).length).toBeGreaterThan(0)
+  expect(screen.getAllByText('CC').length).toBeGreaterThan(0)
+  expect((await screen.findAllByRole('combobox')).length).toBeGreaterThan(0)
   expect(screen.getByRole('radiogroup', { name: 'Theme' })).toBeInTheDocument()
   await act(async () => {})
   expect(request).not.toHaveBeenCalled()

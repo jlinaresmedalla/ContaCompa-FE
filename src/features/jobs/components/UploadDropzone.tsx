@@ -1,3 +1,4 @@
+import { Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -10,7 +11,7 @@ import { useUploadFiles } from '../hooks'
 import type { UploadItem } from '../types'
 
 const ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
-const tone: Record<UploadItem['state'], BadgeTone> = {
+const TONE: Record<UploadItem['state'], BadgeTone> = {
   uploading: 'neutral',
   queued: 'info',
   duplicate: 'warning',
@@ -48,6 +49,7 @@ export function UploadDropzone() {
       >
         <span className="text-muted-foreground">{t('jobs.drop')}</span>
         <Button disabled={isUploading} onClick={() => inputRef.current?.click()}>
+          <Upload aria-hidden="true" className="size-4" />
           {isUploading ? t('jobs.uploading') : t('jobs.choose')}
         </Button>
         <input
@@ -67,7 +69,7 @@ export function UploadDropzone() {
         <ul className="mt-3 space-y-1 text-sm">
           {items.map((item, index) => (
             <li key={`${item.name}-${index}`} className="flex items-center gap-2">
-              <Badge tone={tone[item.state]}>{t(`jobs.uploadState.${item.state}`)}</Badge>
+              <Badge tone={TONE[item.state]}>{t(`jobs.uploadState.${item.state}`)}</Badge>
               <span className="truncate">{item.name}</span>
               {item.message ? (
                 <span className="text-xs text-destructive">{item.message}</span>

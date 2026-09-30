@@ -65,6 +65,8 @@ export const TOKEN_NAMES = {
   ],
   semantic: [
     '--background',
+    '--backdrop-primary',
+    '--backdrop-amber',
     '--foreground',
     '--card',
     '--card-foreground',

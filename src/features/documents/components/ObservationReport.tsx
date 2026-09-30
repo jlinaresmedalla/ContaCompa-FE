@@ -1,3 +1,5 @@
+import { Filter } from 'lucide-react'
+import { IconButton } from '@/components/ui/icon-button'
 import { useTranslation } from 'react-i18next'
 
 import { Skeleton } from '@/components/ui/skeleton'
@@ -8,6 +10,8 @@ import { toApiError } from '@/lib/http'
 
 import { useObservationReport } from '../hooks'
 import { observationLabel } from '../observations'
+
+const REPORT_SKELETON_COUNT = 5
 
 /** What the checks found across all purchase docs; a row click filters the list by that code. */
 export function ObservationReport({ onPickCode }: { onPickCode: (code: string) => void }) {
@@ -37,7 +41,7 @@ export function ObservationReport({ onPickCode }: { onPickCode: (code: string) =
         <CardTitle hint={t('report.hint')}>{t('report.title')}</CardTitle>
         {report.isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 5 }, (_, i) => (
+            {Array.from({ length: REPORT_SKELETON_COUNT }, (_, i) => (
               <Skeleton key={i} className="h-6 w-full" />
             ))}
           </div>
@@ -60,13 +64,15 @@ export function ObservationReport({ onPickCode }: { onPickCode: (code: string) =
                 {(data?.by_code ?? []).map((row) => (
                   <tr key={row.code} className="border-t border-border">
                     <td className="sticky left-0 z-10 border-r border-border bg-card py-1.5 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => onPickCode(row.code)}
-                        className="text-left font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
-                      >
-                        {observationLabel(t, row.code)}
-                      </button>
+                      <span className="flex items-center gap-2">
+                        <span>{observationLabel(t, row.code)}</span>
+                        <IconButton
+                          icon={Filter}
+                          variant="ghost"
+                          label={t('documents.codeFilter', { code: observationLabel(t, row.code) })}
+                          onClick={() => onPickCode(row.code)}
+                        />
+                      </span>
                     </td>
                     <td className="py-1.5">
                       <Badge tone={row.severity === 'warning' ? 'warning' : 'info'}>

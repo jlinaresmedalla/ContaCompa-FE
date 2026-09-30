@@ -2,6 +2,10 @@ import { useTranslation } from 'react-i18next'
 
 import type { CostReport } from '../types'
 
+const COST_DIGITS = 4
+const PERCENT_SCALE = 100
+const MIN_BAR_HEIGHT_PX = 4
+
 /** Purchase docs per day as bars; the tooltip carries tokens and list cost. */
 export function DailyChart({ days }: { days: CostReport['by_day'] }) {
   const { t } = useTranslation()
@@ -16,10 +20,13 @@ export function DailyChart({ days }: { days: CostReport['by_day'] }) {
               date: day.day,
               docs: day.docs,
               tokens: day.input_tokens + day.output_tokens,
-              cost: '$' + Number(day.list_usd).toFixed(4),
+              cost: '$' + Number(day.list_usd).toFixed(COST_DIGITS),
             })}
             className="flex-1 rounded-t bg-primary hover:opacity-80"
-            style={{ height: `${(day.docs / max) * 100}%`, minHeight: day.docs ? 4 : 1 }}
+            style={{
+              height: `${(day.docs / max) * PERCENT_SCALE}%`,
+              minHeight: day.docs ? MIN_BAR_HEIGHT_PX : 1,
+            }}
           />
         ))}
       </div>

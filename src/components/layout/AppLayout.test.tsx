@@ -1,28 +1,43 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { afterEach, beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
-import { sessionKeys } from '@/features/session/api'
-import { apiKeyStore } from '@/lib/api-key'
+import { SESSION_KEYS } from '@/features/session/api'
+import { API_KEY_STORE } from '@/lib/api-key'
 
 import { AppLayout } from './AppLayout'
 
-afterEach(cleanup)
+const DESKTOP_WIDTH_PX = 1280
+const EXPIRY_HOURS = 5
+const MINUTES_PER_HOUR = 60
+const EXPIRY_MINUTES = 12
+const MS_PER_MINUTE = 60_000
+const PARTIAL_MINUTE_MS = 30_000
+
+afterEach(() => {
+  cleanup()
+  vi.unstubAllGlobals()
+})
 
 beforeEach(() => {
+  vi.stubGlobal('innerWidth', DESKTOP_WIDTH_PX)
   localStorage.clear()
-  apiKeyStore.set('company-a')
+  API_KEY_STORE.set('company-a')
   void i18n.changeLanguage('en')
 })
 
 function renderLayout() {
   const client = new QueryClient()
   // 5 h 12 min and a bit: whole minutes are shown, so a slow test run cannot flip the text.
-  client.setQueryData(sessionKeys.me, {
+  client.setQueryData(SESSION_KEYS.me, {
     company: { ruc: '20543306771', legal_name: 'Acme SAC' },
-    expires_at: new Date(Date.now() + (5 * 60 + 12) * 60_000 + 30_000).toISOString(),
+    expires_at: new Date(
+      Date.now() +
+        (EXPIRY_HOURS * MINUTES_PER_HOUR + EXPIRY_MINUTES) * MS_PER_MINUTE +
+        PARTIAL_MINUTE_MS,
+    ).toISOString(),
   })
   client.setQueryData(['purchase-docs', 'list'], { items: ['company-a'] })
   const router = createMemoryRouter(
@@ -46,46 +61,71 @@ function renderLayout() {
   return { client, router }
 }
 
-test('sidebar bottom shows company and time left; sign-out clears key and cache', async () => {
+test('avatar menu shows company and time left; sign-out clears key and cache', async () => {
   const { client, router } = renderLayout()
-  expect(screen.getByText('Acme SAC')).toBeInTheDocument()
-  expect(screen.getByText('Time left: 5 h 12 min')).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
+  fireEvent.keyDown(screen.getByRole('button', { name: 'Company account' }), { key: 'Enter' })
+  expect(await screen.findByText('Time left: 5 h 12 min')).toBeInTheDocument()
+  expect(screen.getByRole('menu')).toHaveTextContent('Acme SAC')
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Sign out' }))
   await waitFor(() => expect(router.state.location.pathname).toBe('/sign-in'))
-  expect(router.state.location.search).toBe('')
-  expect(apiKeyStore.get()).toBeNull()
+  expect(API_KEY_STORE.get()).toBeNull()
   await waitFor(() => expect(client.getQueryData(['purchase-docs', 'list'])).toBeUndefined())
-  expect(client.getQueryData(sessionKeys.me)).toBeUndefined()
+  expect(client.getQueryData(SESSION_KEYS.me)).toBeUndefined()
 })
 
-test('the mobile menu closes on Escape, backdrop click and navigation', () => {
+test('collapsing hides labels, preserves the choice on remount and opens module pages', async () => {
   renderLayout()
-  const toggle = () => screen.getByRole('button', { name: /menu/i })
-  expect(toggle()).toHaveAttribute('aria-controls', 'sidebar')
-  expect(toggle()).toHaveAttribute('aria-expanded', 'false')
-
-  fireEvent.click(toggle())
-  expect(toggle()).toHaveAttribute('aria-expanded', 'true')
-  fireEvent.keyDown(document, { key: 'Escape' })
-  expect(toggle()).toHaveAttribute('aria-expanded', 'false')
-
-  fireEvent.click(toggle())
-  fireEvent.click(screen.getByTestId('sidebar-backdrop'))
-  expect(toggle()).toHaveAttribute('aria-expanded', 'false')
-
-  fireEvent.click(toggle())
-  fireEvent.click(screen.getByRole('link', { name: 'Monitor' }))
-  expect(toggle()).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.queryByTestId('sidebar-backdrop')).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+  expect(screen.queryByText('Extraction')).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Jobs' })).toBeNull()
+  cleanup()
+  renderLayout()
+  expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeInTheDocument()
+  fireEvent.keyDown(screen.getByRole('button', { name: 'Extraction' }), { key: 'Enter' })
+  expect(await screen.findByRole('menuitem', { name: 'Jobs' })).toBeInTheDocument()
+  expect(screen.getByRole('menuitem', { name: 'Purchase docs' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
 })
 
-test('Browser Back does not reopen the mobile menu', async () => {
+test('phone drawer closes on navigation, Escape and outside tap and restores focus', async () => {
+  const PHONE_WIDTH_PX = 375
+  vi.stubGlobal('innerWidth', PHONE_WIDTH_PX)
+  renderLayout()
+  const trigger = screen.getByRole('button', { name: 'Open menu' })
+  fireEvent.click(trigger)
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
+  fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' })
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  await waitFor(() => expect(trigger).toHaveFocus())
+  fireEvent.click(trigger)
+  fireEvent.pointerDown(screen.getByTestId('sidebar-backdrop'), { button: 0 })
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  await waitFor(() => expect(trigger).toHaveFocus())
+  fireEvent.click(trigger)
+  fireEvent.click(screen.getByRole('link', { name: 'Costs' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  await waitFor(() => expect(trigger).toHaveFocus())
+})
+
+test('Browser Back does not reopen the drawer', async () => {
+  const PHONE_WIDTH_PX = 375
+  vi.stubGlobal('innerWidth', PHONE_WIDTH_PX)
   const { router } = renderLayout()
-  const toggle = () => screen.getByRole('button', { name: /menu/i })
-  fireEvent.click(toggle())
-  fireEvent.click(screen.getByRole('link', { name: 'Monitor' }))
-  expect(router.state.location.pathname).toBe('/monitor/costs')
+  fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+  fireEvent.click(screen.getByRole('link', { name: 'Costs' }))
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe('/extraction/purchase-docs')
-  expect(toggle()).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('dialog')).toBeNull()
+})
+
+test('module pages are nested in the sidebar, with no content tabs or exposed preferences', () => {
+  renderLayout()
+  expect(screen.getByRole('complementary')).toContainElement(
+    screen.getByRole('link', { name: 'Jobs' }),
+  )
+  expect(screen.queryByRole('navigation', { name: 'Module pages' })).toBeNull()
+  expect(screen.queryByRole('group', { name: 'Language' })).toBeNull()
+  expect(screen.queryByRole('radiogroup', { name: 'Theme' })).toBeNull()
 })

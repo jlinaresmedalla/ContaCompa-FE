@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/cn'
 
+const SKELETON_ROW_COUNT = 5
+
 type DataTableProps<T> = {
   columns: ColumnDef<T, unknown>[]
   data: T[] | undefined
@@ -74,7 +76,7 @@ export function DataTable<T>({
         </TableHeader>
         <TableBody>
           {isLoading && data === undefined ? (
-            Array.from({ length: 5 }, (_, index) => (
+            Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
               <TableRow key={index} className="group hover:bg-muted">
                 {table.getVisibleLeafColumns().map((column, index) => (
                   <TableCell

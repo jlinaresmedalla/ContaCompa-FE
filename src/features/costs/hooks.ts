@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { costApi, costKeys } from './api'
+import { COST_API, COST_KEYS } from './api'
 
-export function useCostReport(days = 30) {
+const DEFAULT_REPORT_DAYS = 30
+
+export function useCostReport(days = DEFAULT_REPORT_DAYS) {
   return useQuery({
-    queryKey: costKeys.report(days),
-    queryFn: ({ signal }) => costApi.report(days, signal),
+    queryKey: COST_KEYS.report(days),
+    queryFn: ({ signal }) => COST_API.report(days, signal),
   })
 }

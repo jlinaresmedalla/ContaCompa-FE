@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { toApiError } from '@/lib/http'
 import { notifyError, notifySuccess } from '@/lib/notify'
 
-import { jobsApi, jobsKeys } from './api'
+import { JOBS_API, JOBS_KEYS } from './api'
 import type { UploadItem } from './types'
 
 const POLL_MS = 2_000
@@ -13,8 +13,8 @@ const POLL_MS = 2_000
 /** Polls while anything is queued or processing, then stops. */
 export function useJobsOverview() {
   return useQuery({
-    queryKey: jobsKeys.all,
-    queryFn: ({ signal }) => jobsApi.get(signal),
+    queryKey: JOBS_KEYS.all,
+    queryFn: ({ signal }) => JOBS_API.get(signal),
     refetchInterval: (query) => {
       const counts = query.state.data?.counts
       return counts && counts.queued + counts.processing > 0 ? POLL_MS : false
@@ -27,7 +27,7 @@ export function useUploadFiles() {
   const queryClient = useQueryClient()
   const [items, setItems] = useState<UploadItem[]>([])
   const mutation = useMutation({
-    mutationFn: (file: File) => jobsApi.upload(file),
+    mutationFn: (file: File) => JOBS_API.upload(file),
     onSuccess: (result, file) =>
       notifySuccess(
         t(result.duplicate ? 'notifications.duplicate' : 'notifications.uploaded', {
@@ -48,7 +48,7 @@ export function useUploadFiles() {
       } catch {
         update({ name: file.name, state: 'error' })
       }
-      await queryClient.invalidateQueries({ queryKey: jobsKeys.all })
+      await queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all })
     }
   }
 
@@ -59,10 +59,10 @@ export function useRetryJob() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (jobId: string) => jobsApi.retry(jobId),
+    mutationFn: (jobId: string) => JOBS_API.retry(jobId),
     onSuccess: () => {
       notifySuccess(t('notifications.retried'))
-      return queryClient.invalidateQueries({ queryKey: jobsKeys.all })
+      return queryClient.invalidateQueries({ queryKey: JOBS_KEYS.all })
     },
     onError: (error) => notifyError(toApiError(error).message),
   })

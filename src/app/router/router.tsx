@@ -1,5 +1,7 @@
-import { createBrowserRouter } from 'react-router'
+import { useRoutes } from 'react-router'
 
-import { routes } from '@/app/router/routes'
+import { ROUTES } from '@/app/router/routes'
 
-export const router = createBrowserRouter(routes)
+export function AppRoutes() {
+  return useRoutes(ROUTES)
+}

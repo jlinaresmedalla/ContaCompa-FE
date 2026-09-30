@@ -6,6 +6,8 @@ import { i18n } from '@/app/i18n'
 import type { ProviderBreaker } from '../types'
 import { PausedBanner } from './PausedBanner'
 
+const UNAVAILABLE_ATTEMPTS = 2
+
 const OPEN_UNTIL = '2026-09-29T15:45:00-05:00'
 
 function breaker(patch: Partial<ProviderBreaker>): ProviderBreaker {
@@ -14,7 +16,7 @@ function breaker(patch: Partial<ProviderBreaker>): ProviderBreaker {
 
 function expectedTime() {
   const date = new Date(OPEN_UNTIL)
-  const pad = (n: number) => String(n).padStart(2, '0')
+  const pad = (n: number) => String(n).padStart(UNAVAILABLE_ATTEMPTS, '0')
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 

@@ -1,23 +1,22 @@
-import { FileText, Search } from 'lucide-react'
+import { FileText, Search, Download, X, ChevronLeft, ChevronRight, Upload } from 'lucide-react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 import { PageHeader } from '@/components/ui/page-header'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { Segmented } from '@/components/ui/segmented'
 import { toApiError } from '@/lib/http'
 
 import { PAGE_SIZE } from './api'
 import { DocumentsTable } from './components/DocumentsTable'
 import { ObservationReport } from './components/ObservationReport'
-import { useExportXlsx, useListFilters, usePurchaseDocs } from './hooks'
+import { OBSERVATION_FILTERS, useExportXlsx, useListFilters, usePurchaseDocs } from './hooks'
 import { observationLabel } from './observations'
 import type { ObservationFilter } from './types'
-
-const FILTERS: ObservationFilter[] = ['all', 'warning', 'any', 'none']
 
 export function DocumentsPage() {
   const { t, i18n } = useTranslation()
@@ -30,13 +29,13 @@ export function DocumentsPage() {
         title={t('nav.purchaseDocs')}
         description={t('pageStates.documents')}
         actions={
-          <Button
+          <IconButton
+            icon={Download}
+            label={exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
             variant="outline"
             disabled={exportXlsx.isPending}
             onClick={() => exportXlsx.mutate(i18n.language)}
-          >
-            {exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
-          </Button>
+          />
         }
       />
       <ObservationReport onPickCode={(code) => setFilters({ observations: 'all', code })} />
@@ -44,7 +43,10 @@ export function DocumentsPage() {
         <Segmented<ObservationFilter>
           label={t('documents.filterLabel')}
           value={filters.observations}
-          options={FILTERS.map((value) => ({ value, label: t(`documents.filters.${value}`) }))}
+          options={OBSERVATION_FILTERS.map((value) => ({
+            value,
+            label: t(`documents.filters.${value}`),
+          }))}
           onChange={(observations) => setFilters({ observations, code: null })}
         />
         {filters.code ? (
@@ -52,13 +54,12 @@ export function DocumentsPage() {
             <Badge tone="info">
               {t('documents.codeFilter', { code: observationLabel(t, filters.code) })}
             </Badge>
-            <button
-              type="button"
-              className="text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+            <IconButton
+              icon={X}
+              label={t('documents.clearCode')}
+              variant="ghost"
               onClick={() => setFilters({ ...filters, code: null })}
-            >
-              {t('documents.clearCode')}
-            </button>
+            />
           </span>
         ) : null}
       </div>
@@ -70,12 +71,12 @@ export function DocumentsPage() {
               title={t('pageStates.filteredTitle')}
               description={t('pageStates.filteredDescription')}
               action={
-                <Button
+                <IconButton
+                  icon={X}
+                  label={t('pageStates.clear')}
                   variant="outline"
                   onClick={() => setFilters({ observations: 'all', code: null })}
-                >
-                  {t('pageStates.clear')}
-                </Button>
+                />
               }
             />
           ) : (
@@ -85,7 +86,10 @@ export function DocumentsPage() {
               description={t('pageStates.docsDescription')}
               action={
                 <Button asChild>
-                  <Link to={paths.jobs}>{t('pageStates.upload')}</Link>
+                  <Link to={PATHS.jobs}>
+                    <Upload aria-hidden="true" className="size-4" />
+                    {t('pageStates.upload')}
+                  </Link>
                 </Button>
               }
             />
@@ -96,23 +100,23 @@ export function DocumentsPage() {
         error={docs.error ? toApiError(docs.error).message : null}
       />
       <div className="flex flex-wrap items-center justify-end gap-2">
-        <Button
+        <IconButton
+          icon={ChevronLeft}
+          label={t('documents.previous')}
           variant="outline"
           disabled={offset === 0 || docs.isLoading}
           onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-        >
-          {t('documents.previous')}
-        </Button>
+        />
         <span className="text-sm text-muted-foreground">
           {t('documents.page', { n: Math.floor(offset / PAGE_SIZE) + 1 })}
         </span>
-        <Button
+        <IconButton
+          icon={ChevronRight}
+          label={t('documents.next')}
           variant="outline"
           disabled={docs.data?.next_offset == null || docs.isLoading}
           onClick={() => setOffset(docs.data!.next_offset!)}
-        >
-          {t('documents.next')}
-        </Button>
+        />
       </div>
     </div>
   )

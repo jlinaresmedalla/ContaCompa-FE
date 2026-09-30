@@ -1,26 +1,20 @@
 import { Code2 } from 'lucide-react'
-import { useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet } from 'react-router'
 
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 import { Logo } from '@/components/brand/Logo'
 import { Button } from '@/components/ui/button'
-import { apiKeyStore } from '@/lib/api-key'
+import { useAppDestination } from './use-app-destination'
 
 import { PreferenceSwitches } from './PreferenceSwitches'
 
-const subscribeToKey = (listener: () => void) => apiKeyStore.subscribe(listener)
-const readKey = () => apiKeyStore.get()
-
 export function PublicMainButton() {
   const { t } = useTranslation()
-  const key = useSyncExternalStore(subscribeToKey, readKey)
+  const destination = useAppDestination()
   return (
     <Button asChild>
-      <Link to={key ? paths.purchaseDocs : paths.signIn}>
-        {t(key ? 'publicLayout.openDashboard' : 'publicLayout.signIn')}
-      </Link>
+      <Link to={destination}>{t('publicLayout.goToApp')}</Link>
     </Button>
   )
 }
@@ -32,7 +26,7 @@ export function PublicLayout() {
       <header className="material sticky top-0 z-20 border-b border-border">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Button asChild variant="ghost" className="px-0">
-            <Link to={paths.home} aria-label={t('publicLayout.home')}>
+            <Link to={PATHS.home} aria-label={t('publicLayout.home')}>
               <Logo />
             </Link>
           </Button>
@@ -79,7 +73,7 @@ export function PublicLayout() {
               </a>
             </Button>
             <Button asChild variant="ghost">
-              <Link to={paths.design}>{t('publicLayout.design')}</Link>
+              <Link to={PATHS.design}>{t('publicLayout.design')}</Link>
             </Button>
           </nav>
         </div>

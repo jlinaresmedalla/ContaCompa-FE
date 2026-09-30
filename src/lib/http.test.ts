@@ -2,15 +2,18 @@ import { AxiosError, CanceledError, type InternalAxiosRequestConfig } from 'axio
 import { waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { apiKeyStore } from './api-key'
+import { API_KEY_STORE } from './api-key'
 import { cancelCompanyRequests, http, setUnauthorizedHandler } from './http'
 
-const defaultAdapter = http.defaults.adapter
+const FORBIDDEN_STATUS = 403
+const UNAUTHORIZED_STATUS = 401
+
+const DEFAULT_ADAPTER = http.defaults.adapter
 
 beforeEach(() => localStorage.clear())
 
 afterEach(() => {
-  http.defaults.adapter = defaultAdapter
+  http.defaults.adapter = DEFAULT_ADAPTER
   setUnauthorizedHandler(() => {})
 })
 
@@ -44,11 +47,11 @@ test('company switch aborts an outstanding HTTP request', async () => {
 test('a 401 on the stored key calls the unauthorized handler; a 403 does not', async () => {
   const handler = vi.fn()
   setUnauthorizedHandler(handler)
-  apiKeyStore.set('stored')
-  answerWith(403)
+  API_KEY_STORE.set('stored')
+  answerWith(FORBIDDEN_STATUS)
   await expect(http.get('/v1/x')).rejects.toBeInstanceOf(AxiosError)
   expect(handler).not.toHaveBeenCalled()
-  answerWith(401)
+  answerWith(UNAUTHORIZED_STATUS)
   await expect(http.get('/v1/x')).rejects.toBeInstanceOf(AxiosError)
   expect(handler).toHaveBeenCalledOnce()
 })
@@ -56,7 +59,7 @@ test('a 401 on the stored key calls the unauthorized handler; a 403 does not', a
 test('a 401 for a candidate key (sign-in) does not sign out', async () => {
   const handler = vi.fn()
   setUnauthorizedHandler(handler)
-  answerWith(401)
+  answerWith(UNAUTHORIZED_STATUS)
   await expect(
     http.get('/v1/me', { headers: { 'X-API-Key': 'candidate' } }),
   ).rejects.toBeInstanceOf(AxiosError)
@@ -66,8 +69,8 @@ test('a 401 for a candidate key (sign-in) does not sign out', async () => {
 test('a 401 for a request sent with a key other than the stored one does not sign out', async () => {
   const handler = vi.fn()
   setUnauthorizedHandler(handler)
-  apiKeyStore.set('current')
-  answerWith(401)
+  API_KEY_STORE.set('current')
+  answerWith(UNAUTHORIZED_STATUS)
   await expect(http.get('/v1/x', { headers: { 'X-API-Key': 'older' } })).rejects.toBeInstanceOf(
     AxiosError,
   )

@@ -9,6 +9,6 @@ function requiredUrl(name: string, value: unknown): string {
   }
 }
 
-export const env = {
+export const ENV = {
   apiUrl: requiredUrl('VITE_API_URL', import.meta.env.VITE_API_URL),
 }

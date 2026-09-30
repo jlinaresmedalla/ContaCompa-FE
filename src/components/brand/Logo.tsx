@@ -8,7 +8,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const sizes = {
+const SIZES = {
   sm: { mark: 'size-4', wordmark: 'text-sm' },
   md: { mark: 'size-8', wordmark: 'text-[17px]' },
   lg: { mark: 'size-12', wordmark: 'text-2xl' },
@@ -17,8 +17,8 @@ const sizes = {
 export function Logo({ className, title, size = 'md' }: LogoProps) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
-      <LogoMark className={cn('text-primary', sizes[size].mark)} title={title} />
-      <span className={cn('font-semibold tracking-tight text-foreground', sizes[size].wordmark)}>
+      <LogoMark className={cn('text-primary', SIZES[size].mark)} title={title} />
+      <span className={cn('font-semibold tracking-tight text-foreground', SIZES[size].wordmark)}>
         Contacompa
       </span>
     </span>

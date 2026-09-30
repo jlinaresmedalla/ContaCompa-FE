@@ -1,3 +1,4 @@
+import { PAGE_SIZE } from './api'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
@@ -5,8 +6,10 @@ import { beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
 
-import { documentApi, documentKeys } from './api'
+import { DOCUMENT_API, DOCUMENT_KEYS } from './api'
 import { DocumentsPage } from './DocumentsPage'
+
+const FILTERED_DOCUMENT_COUNT = 2
 
 vi.mock('./components/ObservationReport', () => ({ ObservationReport: () => null }))
 
@@ -16,11 +19,11 @@ beforeEach(() => {
 
 test('uses next_offset and resets to the first page when filters change', async () => {
   const list = vi
-    .spyOn(documentApi, 'list')
+    .spyOn(DOCUMENT_API, 'list')
     .mockImplementation((_filters, offset) =>
-      Promise.resolve({ items: [], next_offset: offset === 0 ? 50 : null }),
+      Promise.resolve({ items: [], next_offset: offset === 0 ? PAGE_SIZE : null }),
     )
-  vi.spyOn(documentApi, 'report').mockResolvedValue({
+  vi.spyOn(DOCUMENT_API, 'report').mockResolvedValue({
     documents: 0,
     clean: 0,
     with_warnings: 0,
@@ -45,7 +48,7 @@ test('uses next_offset and resets to the first page when filters change', async 
   await waitFor(() =>
     expect(list).toHaveBeenCalledWith(
       { observations: 'all', code: null },
-      50,
+      PAGE_SIZE,
       expect.any(AbortSignal),
     ),
   )
@@ -74,7 +77,7 @@ function renderPage(entry = '/') {
 }
 
 test('offers upload on Jobs when there are no purchase docs', async () => {
-  const list = vi.spyOn(documentApi, 'list').mockResolvedValue({ items: [], next_offset: null })
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({ items: [], next_offset: null })
   renderPage()
   expect(await screen.findByRole('link', { name: 'Upload files' })).toHaveAttribute(
     'href',
@@ -86,7 +89,7 @@ test('offers upload on Jobs when there are no purchase docs', async () => {
 test.each(['/?obs=warning', '/?code=amount_mismatch'])(
   'clears active filters from %s',
   async (entry) => {
-    const list = vi.spyOn(documentApi, 'list').mockResolvedValue({ items: [], next_offset: null })
+    const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({ items: [], next_offset: null })
     renderPage(entry)
     fireEvent.click(await screen.findByRole('button', { name: 'Clear filters' }))
     await waitFor(() =>
@@ -124,7 +127,7 @@ test('keeps rows visible without skeletons during a background refetch', async (
   }
   let finish!: (value: typeof data) => void
   const list = vi
-    .spyOn(documentApi, 'list')
+    .spyOn(DOCUMENT_API, 'list')
     .mockResolvedValueOnce(data)
     .mockImplementationOnce(
       () =>
@@ -136,9 +139,9 @@ test('keeps rows visible without skeletons during a background refetch', async (
   expect(await screen.findByRole('link', { name: 'F001-123' })).toBeInTheDocument()
   let refresh!: Promise<void>
   act(() => {
-    refresh = client.invalidateQueries({ queryKey: documentKeys.lists() })
+    refresh = client.invalidateQueries({ queryKey: DOCUMENT_KEYS.lists() })
   })
-  await waitFor(() => expect(list).toHaveBeenCalledTimes(2))
+  await waitFor(() => expect(list).toHaveBeenCalledTimes(FILTERED_DOCUMENT_COUNT))
   expect(client.isFetching()).toBe(1)
   expect(screen.getByRole('link', { name: 'F001-123' })).toBeInTheDocument()
   expect(container.querySelector('[data-slot="skeleton"]')).toBeNull()
@@ -148,3 +151,19 @@ test('keeps rows visible without skeletons during a background refetch', async (
   })
   list.mockRestore()
 })
+
+test.each(['all', 'warning', 'any', 'none', 'invalid'])(
+  'validates the observation URL value %s',
+  async (value) => {
+    const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({ items: [], next_offset: null })
+    renderPage(`/?obs=${value}`)
+    await waitFor(() =>
+      expect(list).toHaveBeenCalledWith(
+        { observations: value === 'invalid' ? 'all' : value, code: null },
+        0,
+        expect.any(AbortSignal),
+      ),
+    )
+    list.mockRestore()
+  },
+)

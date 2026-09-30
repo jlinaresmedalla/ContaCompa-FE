@@ -5,7 +5,7 @@ import { number } from '@/lib/format'
 
 import type { PurchaseDocSummary } from '../types'
 
-const cell = 'px-2 py-1.5 text-right tabular-nums whitespace-nowrap'
+const CELL = 'px-2 py-1.5 text-right tabular-nums whitespace-nowrap'
 
 /** A purchase doc's lines with both prices. The printed column is marked; the other is
  * derived (÷ or × 1.18). Without an IGV flag nothing can be derived. */
@@ -39,12 +39,12 @@ export function LinePrices({ doc }: { doc: PurchaseDocSummary }) {
               <th className="px-2 py-1.5 text-left font-semibold">
                 {t('detail.fields.description')}
               </th>
-              <th className={`${cell} font-semibold`}>{t('detail.fields.quantity')}</th>
+              <th className={`${CELL} font-semibold`}>{t('detail.fields.quantity')}</th>
               <th className="px-2 py-1.5 text-left font-semibold">{t('detail.fields.unit')}</th>
-              <th className={`${cell} font-semibold`}>{t('prices.unitWithout')}</th>
-              <th className={`${cell} font-semibold`}>{t('prices.unitWith')}</th>
-              <th className={`${cell} font-semibold`}>{t('prices.totalWithout')}</th>
-              <th className={`${cell} font-semibold`}>{t('prices.totalWith')}</th>
+              <th className={`${CELL} font-semibold`}>{t('prices.unitWithout')}</th>
+              <th className={`${CELL} font-semibold`}>{t('prices.unitWith')}</th>
+              <th className={`${CELL} font-semibold`}>{t('prices.totalWithout')}</th>
+              <th className={`${CELL} font-semibold`}>{t('prices.totalWith')}</th>
             </tr>
           </thead>
           <tbody>
@@ -54,18 +54,18 @@ export function LinePrices({ doc }: { doc: PurchaseDocSummary }) {
                   {line.line_number}
                 </td>
                 <td className="px-2 py-1.5">{line.description ?? '—'}</td>
-                <td className={cell}>{number(line.quantity)}</td>
+                <td className={CELL}>{number(line.quantity)}</td>
                 <td className="px-2 py-1.5">{line.unit}</td>
-                <td className={`${cell} ${mark(printedWithout)}`}>
+                <td className={`${CELL} ${mark(printedWithout)}`}>
                   {number(line.unit_price_without_igv ?? (printedWith ? null : line.unit_price))}
                 </td>
-                <td className={`${cell} ${mark(printedWith)}`}>
+                <td className={`${CELL} ${mark(printedWith)}`}>
                   {number(line.unit_price_with_igv)}
                 </td>
-                <td className={`${cell} ${mark(printedWithout)}`}>
+                <td className={`${CELL} ${mark(printedWithout)}`}>
                   {number(line.line_total_without_igv ?? (printedWith ? null : line.line_total))}
                 </td>
-                <td className={`${cell} ${mark(printedWith)}`}>
+                <td className={`${CELL} ${mark(printedWith)}`}>
                   {number(line.line_total_with_igv)}
                 </td>
               </tr>
@@ -76,8 +76,8 @@ export function LinePrices({ doc }: { doc: PurchaseDocSummary }) {
               <td colSpan={6} className="px-2 py-1.5 text-right text-muted-foreground">
                 {t('prices.docTotals')}
               </td>
-              <td className={cell}>{number(doc.taxable_amount)}</td>
-              <td className={cell}>{number(doc.total_amount)}</td>
+              <td className={CELL}>{number(doc.taxable_amount)}</td>
+              <td className={CELL}>{number(doc.total_amount)}</td>
             </tr>
           </tfoot>
         </table>

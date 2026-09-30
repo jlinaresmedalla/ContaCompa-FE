@@ -1,20 +1,13 @@
-import { useTranslation } from 'react-i18next'
-
 import { ErrorNote } from '@/components/ui/input'
 import { toApiError } from '@/lib/http'
 
 import { useFileUrl } from '../hooks'
+import { FilePreviewSkeleton } from './FilePreviewSkeleton'
 
 export function FilePreview({ documentId, filename }: { documentId: string; filename: string }) {
-  const { t } = useTranslation()
   const file = useFileUrl(documentId)
   if (file.error) return <ErrorNote message={toApiError(file.error).message} />
-  if (file.isLoading || !file.url)
-    return (
-      <div className="grid h-96 place-items-center text-sm text-muted-foreground">
-        {t('common.loading')}
-      </div>
-    )
+  if (file.isLoading || !file.url) return <FilePreviewSkeleton />
   if (file.type === 'application/pdf')
     return (
       <iframe

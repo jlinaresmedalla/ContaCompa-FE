@@ -1,0 +1,42 @@
+import type { Messages } from '../en'
+
+export const ES_NAVIGATION: Pick<Messages, 'nav' | 'sidebar' | 'publicLayout'> = {
+  nav: {
+    collapse: 'Contraer barra lateral',
+    expand: 'Expandir barra lateral',
+    main: 'Módulos',
+    pages: 'Páginas del módulo',
+    open: 'Abrir menú',
+    close: 'Cerrar menú',
+    extraction: 'Extracción',
+    monitor: 'Monitoreo',
+    assistant: 'Asistente',
+    purchaseDocs: 'Comprobantes',
+    jobs: 'Procesamientos',
+    costs: 'Costos',
+  },
+  sidebar: {
+    account: 'Cuenta de la empresa',
+    language: 'Idioma',
+    en: 'Inglés',
+    es: 'Español',
+    theme: 'Tema',
+    light: 'Claro',
+    dark: 'Oscuro',
+    system: 'Sistema',
+  },
+  publicLayout: {
+    home: 'Inicio',
+    pitch: 'Tus comprobantes, leídos por ti.',
+    viewCode: 'Ver código',
+    goToApp: 'Ir a la app →',
+    credit: 'Creado por Juan Álvaro Linares Medalla.',
+    footer: 'Enlaces del proyecto',
+    apiRepo: 'Código de la API',
+    dashboardRepo: 'Código del panel',
+    linkedin: 'LinkedIn',
+    design: 'Diseño',
+    keyHint: 'Ingresa la clave de acceso que el propietario entregó a tu empresa.',
+    backHome: 'Volver a Inicio',
+  },
+}

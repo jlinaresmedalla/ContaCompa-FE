@@ -1,31 +1,35 @@
-import { useState } from 'react'
+import { ArrowLeft, Trash2, FileText } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link } from 'react-router'
 
-import { paths } from '@/app/router/paths'
+import { PATHS } from '@/app/router/paths'
 import { PageHeader } from '@/components/ui/page-header'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Button } from '@/components/ui/button'
+import { IconButton } from '@/components/ui/icon-button'
 import { Card, CardTitle } from '@/components/ui/card'
 import { ErrorNote } from '@/components/ui/input'
-import { cn } from '@/lib/cn'
 import { dateTime } from '@/lib/format'
 import { toApiError } from '@/lib/http'
 
-import { CorrectionForm } from './components/CorrectionForm'
-import { FilePreview } from './components/FilePreview'
-import { IssueBadges } from './components/IssueBadges'
-import { LinePrices } from './components/LinePrices'
-import { useDeleteDoc, usePurchaseDoc } from './hooks'
-import { observationLabel } from './observations'
+import { DetailTabs } from './components/DetailTabs'
+import { HeaderSections } from './components/HeaderSections'
+import { FilePreviewSkeleton } from './components/FilePreviewSkeleton'
+import { lazyPage } from '@/lib/lazyPage'
+import { useDocumentDetail } from './use-document-detail'
+
+const FilePreview = lazyPage(
+  async () => {
+    const module = await import('./components/FilePreview')
+    return { default: module.FilePreview }
+  },
+  <FilePreviewSkeleton />,
+)
+
+const HEADER_SKELETON_COUNT = 12
 
 export function DocumentDetailPage() {
   const { t, i18n } = useTranslation()
-  const { id = '' } = useParams()
-  const doc = usePurchaseDoc(id)
-  const remove = useDeleteDoc()
-  const navigate = useNavigate()
-  const [fileIndex, setFileIndex] = useState(0)
+  const { doc, remove, fileIndex, setFileIndex, file, title, confirmDelete } = useDocumentDetail()
 
   if (doc.error && !doc.data)
     return (
@@ -49,7 +53,7 @@ export function DocumentDetailPage() {
           <Card className="order-1 min-w-0 lg:order-2">
             <Skeleton className="h-6 w-48" />
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {Array.from({ length: 12 }, (_, i) => (
+              {Array.from({ length: HEADER_SKELETON_COUNT }, (_, i) => (
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
@@ -58,8 +62,6 @@ export function DocumentDetailPage() {
       </div>
     )
   const data = doc.data
-  const file = data.documents[fileIndex] ?? data.documents[0]
-  const title = data.doc_number ?? '?'
   const locale = i18n.language
 
   return (
@@ -72,24 +74,18 @@ export function DocumentDetailPage() {
           </>
         }
         back={
-          <Link
-            to={paths.purchaseDocs}
-            className="text-sm text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
-          >
-            {t('detail.back')}
-          </Link>
+          <IconButton asChild icon={ArrowLeft} label={t('detail.back')} variant="ghost">
+            <Link to={PATHS.purchaseDocs} />
+          </IconButton>
         }
         actions={
-          <Button
+          <IconButton
+            icon={Trash2}
+            label={t('common.delete')}
             variant="danger"
             disabled={remove.isPending}
-            onClick={() => {
-              if (!window.confirm(t('documents.confirmDelete', { name: title }))) return
-              remove.mutate(data.id, { onSuccess: () => void navigate(paths.purchaseDocs) })
-            }}
-          >
-            {t('common.delete')}
-          </Button>
+            onClick={confirmDelete}
+          />
         }
       />
       {remove.error ? <ErrorNote message={toApiError(remove.error).message} /> : null}
@@ -102,17 +98,15 @@ export function DocumentDetailPage() {
           {data.documents.length > 1 ? (
             <div className="mb-2 flex flex-wrap gap-1">
               {data.documents.map((document, index) => (
-                <button
+                <IconButton
                   key={document.id}
-                  type="button"
+                  icon={FileText}
+                  label={document.filename}
+                  variant="ghost"
+                  aria-pressed={index === fileIndex}
                   onClick={() => setFileIndex(index)}
-                  className={cn(
-                    'max-w-full rounded-md px-2 py-1 text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none',
-                    index === fileIndex ? 'bg-muted font-medium' : 'text-muted-foreground',
-                  )}
-                >
-                  {document.filename}
-                </button>
+                  className="aria-pressed:bg-muted"
+                />
               ))}
             </div>
           ) : null}
@@ -120,53 +114,8 @@ export function DocumentDetailPage() {
         </Card>
 
         <div className="order-1 min-w-0 space-y-4 lg:order-2">
-          <Card>
-            <CardTitle hint={t('detail.observationsHint')}>{t('detail.observations')}</CardTitle>
-            <IssueBadges issues={data.issues} />
-            <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
-              {data.issues.map((issue, index) => (
-                <li key={index}>
-                  <span className="font-semibold text-foreground">
-                    {observationLabel(t, issue.code)}
-                  </span>
-                  {issue.line_number ? ` (${t('detail.line', { n: issue.line_number })})` : ''}:{' '}
-                  {issue.detail}
-                </li>
-              ))}
-            </ul>
-          </Card>
-
-          <Card>
-            <CardTitle hint={t('prices.legend')}>{t('detail.pricesTitle')}</CardTitle>
-            <LinePrices doc={data} />
-          </Card>
-
-          <CorrectionForm key={`${data.id}-${data.corrections.length}`} doc={data} />
-
-          <Card>
-            <CardTitle hint={t('detail.historyCount', { count: data.corrections.length })}>
-              {t('detail.history')}
-            </CardTitle>
-            {data.corrections.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('detail.noCorrections')}</p>
-            ) : (
-              <ul className="space-y-1 text-sm">
-                {data.corrections.map((correction, index) => (
-                  <li key={index} className="flex flex-wrap gap-2">
-                    <span className="text-muted-foreground">
-                      {dateTime(correction.corrected_at, locale)}
-                    </span>
-                    <span className="font-medium">{correction.field}</span>
-                    <span className="text-muted-foreground line-through">
-                      {correction.old_value ?? '∅'}
-                    </span>
-                    <span>→ {correction.new_value ?? '∅'}</span>
-                    <span className="text-muted-foreground">· {correction.corrected_by}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
+          <HeaderSections key={data.id} doc={data} />
+          <DetailTabs doc={data} />
           <p className="text-xs text-muted-foreground">
             {t('detail.processed', { date: dateTime(data.created_at, locale) })} ·{' '}
             {t('detail.exported', { date: dateTime(data.exported_at, locale) })}

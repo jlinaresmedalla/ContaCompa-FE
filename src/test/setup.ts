@@ -1,6 +1,14 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
-import { afterEach } from 'vitest'
+import { afterEach, beforeAll } from 'vitest'
+import { I18N_READY, setLanguage } from '@/app/i18n'
+
+// Component tests may switch languages directly after bootstrapping both dictionaries.
+beforeAll(async () => {
+  await I18N_READY
+  await setLanguage('es')
+  await setLanguage('en')
+})
 
 // Vitest runs without globals, so Testing Library cannot register its own cleanup.
 afterEach(cleanup)

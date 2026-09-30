@@ -1,12 +1,12 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Trash2, ExternalLink } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { paths } from '@/app/router/paths'
-import { Button } from '@/components/ui/button'
+import { PATHS } from '@/app/router/paths'
+import { IconButton } from '@/components/ui/icon-button'
 import { DataTable } from '@/components/ui/data-table'
 import { money } from '@/lib/format'
 
@@ -19,8 +19,9 @@ function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
   const { t } = useTranslation()
   const remove = useDeleteDoc()
   return (
-    <Button
-      size="sm"
+    <IconButton
+      icon={Trash2}
+      label={t('common.delete')}
       variant="ghost"
       className="text-destructive"
       disabled={remove.isPending}
@@ -28,9 +29,7 @@ function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
         if (window.confirm(t('documents.confirmDelete', { name: doc.doc_number ?? '?' })))
           remove.mutate(doc.id)
       }}
-    >
-      {t('common.delete')}
-    </Button>
+    />
   )
 }
 
@@ -43,30 +42,21 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       id: 'expand',
       header: '',
       cell: ({ row }) => (
-        <button
-          type="button"
+        <IconButton
+          icon={ChevronRight}
+          label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
+          variant="ghost"
           onClick={row.getToggleExpandedHandler()}
           aria-expanded={row.getIsExpanded()}
-          aria-label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
-          title={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
-          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <ChevronRight
-            aria-hidden="true"
-            className={
-              row.getIsExpanded()
-                ? 'size-4 rotate-90 transition-transform duration-150'
-                : 'size-4 transition-transform duration-150'
-            }
-          />
-        </button>
+          className={row.getIsExpanded() ? '[&_svg]:rotate-90' : undefined}
+        />
       ),
     },
     {
       header: t('documents.columns.number'),
       cell: ({ row }) => (
         <Link
-          to={paths.purchaseDoc(row.original.id)}
+          to={PATHS.purchaseDoc(row.original.id)}
           className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none font-medium whitespace-nowrap text-primary hover:underline"
         >
           {row.original.doc_number ?? '?'}
@@ -119,9 +109,9 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Button asChild size="sm" variant="outline">
-            <Link to={paths.purchaseDoc(row.original.id)}>{t('common.open')}</Link>
-          </Button>
+          <IconButton asChild icon={ExternalLink} label={t('common.open')} variant="outline">
+            <Link to={PATHS.purchaseDoc(row.original.id)}>{t('common.open')}</Link>
+          </IconButton>
           <DeleteButton doc={row.original} />
         </div>
       ),
