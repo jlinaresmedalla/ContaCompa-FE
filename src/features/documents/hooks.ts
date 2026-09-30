@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
+
+import { toApiError } from '@/lib/http'
+import { notifyError, notifySuccess } from '@/lib/notify'
 
 import { documentApi, documentKeys } from './api'
 import type { CorrectionPayload, ListFilters, ObservationFilter } from './types'
@@ -86,10 +90,15 @@ function useInvalidateDoc() {
 }
 
 export function useCorrectDoc(id: string) {
+  const { t } = useTranslation()
   const invalidate = useInvalidateDoc()
   return useMutation({
     mutationFn: (payload: CorrectionPayload) => documentApi.correct(id, payload),
-    onSuccess: () => invalidate(id),
+    onSuccess: () => {
+      notifySuccess(t('notifications.corrected'))
+      return invalidate(id)
+    },
+    onError: (error) => notifyError(toApiError(error).message),
   })
 }
 
@@ -109,17 +118,20 @@ export function useDeleteDoc() {
 }
 
 export function useExportXlsx() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (language: string) => documentApi.exportXlsx(language),
-    onSuccess: async ({ blob }) => {
+    onSuccess: async ({ blob, count }) => {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
       link.download = 'purchase-docs.xlsx'
       link.click()
       URL.revokeObjectURL(url)
+      notifySuccess(t('notifications.exported', { count }))
       await queryClient.invalidateQueries({ queryKey: documentKeys.all })
     },
+    onError: (error) => notifyError(toApiError(error).message),
   })
 }

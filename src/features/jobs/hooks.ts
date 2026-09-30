@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
 
 import { toApiError } from '@/lib/http'
+import { notifyError, notifySuccess } from '@/lib/notify'
 
 import { jobsApi, jobsKeys } from './api'
 import type { UploadItem } from './types'
@@ -21,9 +23,19 @@ export function useJobsOverview() {
 }
 
 export function useUploadFiles() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [items, setItems] = useState<UploadItem[]>([])
-  const mutation = useMutation({ mutationFn: (file: File) => jobsApi.upload(file) })
+  const mutation = useMutation({
+    mutationFn: (file: File) => jobsApi.upload(file),
+    onSuccess: (result, file) =>
+      notifySuccess(
+        t(result.duplicate ? 'notifications.duplicate' : 'notifications.uploaded', {
+          name: file.name,
+        }),
+      ),
+    onError: (error) => notifyError(toApiError(error).message),
+  })
 
   async function upload(files: File[]) {
     setItems(files.map((file) => ({ name: file.name, state: 'uploading' })))
@@ -33,8 +45,8 @@ export function useUploadFiles() {
       try {
         const result = await mutation.mutateAsync(file)
         update({ name: file.name, state: result.duplicate ? 'duplicate' : 'queued' })
-      } catch (error) {
-        update({ name: file.name, state: 'error', message: toApiError(error).message })
+      } catch {
+        update({ name: file.name, state: 'error' })
       }
       await queryClient.invalidateQueries({ queryKey: jobsKeys.all })
     }
@@ -44,9 +56,14 @@ export function useUploadFiles() {
 }
 
 export function useRetryJob() {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (jobId: string) => jobsApi.retry(jobId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: jobsKeys.all }),
+    onSuccess: () => {
+      notifySuccess(t('notifications.retried'))
+      return queryClient.invalidateQueries({ queryKey: jobsKeys.all })
+    },
+    onError: (error) => notifyError(toApiError(error).message),
   })
 }

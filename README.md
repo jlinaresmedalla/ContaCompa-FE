@@ -1,59 +1,99 @@
 # Contacompa dashboard
 
-React dashboard for the separate `Contacompa-backend` API repository. A fixed sidebar lists the modules (a static list in `src/app/modules.tsx`, the same for every company; language and theme switches sit at its bottom, and below `md` it collapses to icons). Extraction operations holds the purchase docs list and detail (observations, the original file, corrections, 50-record pages, Excel export) and a Jobs tab (upload, job status, retry, and a banner with the next try time while the model provider is paused: `provider` in `/v1/monitor`, backend ADR 0021); Monitor holds Costs (billed and list-price usage); Assistant is in the list but hidden. Every page except `/sign-in` needs a company API key (see Sign-in); the sidebar bottom shows the company, the time left on the key and sign-out.
+React dashboard where an accountant uploads Peruvian purchase documents, reviews what the model extracted, corrects it, and exports it to Excel.
 
-## Local setup
+<!-- demo GIF placeholder: assets/demo.gif, record it after the first live run -->
 
-Start PostgreSQL, the API, and worker in `../Contacompa-backend` first. Then:
+## Overview
+
+The dashboard is the accountant's side of Contacompa. They sign in with a company API key, upload PDFs or photos, follow the extraction jobs, and review the purchase records the model produced: only flagged records need attention, the original file sits next to the data, and corrections are one form away. A costs page shows what the model spends. English by default, Spanish written natively for a Peruvian accountant, light and dark themes.
+
+The live URL opens on a public Home page that explains Contacompa without a key: how it works in four steps, the architecture diagram and stack, and links to both repositories. Its main button reads "Sign in", or "Open dashboard" when a key is stored; it makes no request to the API. Unknown paths lead to Home without a key and to Purchase docs with one.
+
+<!-- Home page screenshot placeholder: add after the next deploy -->
+
+The public Design page (`/design`) renders the design system from the code itself: primitive and semantic tokens read live from the CSS (with the primitive each semantic token points to in the active theme), type, spacing, radius, shadow and motion, and every shared component in its states. It makes no request to the API.
+
+The API and worker live in [Contacompa-backend](https://github.com/jlinaresmedalla/ContaCompa).
+
+## Architecture
+
+![Contacompa architecture](assets/architecture.png)
+
+## Tech stack
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg" alt="React" title="React" width="40" height="40"/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg" alt="TypeScript" title="TypeScript" width="40" height="40"/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vitejs/vitejs-original.svg" alt="Vite" title="Vite" width="40" height="40"/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/tailwindcss/tailwindcss-original.svg" alt="Tailwind CSS" title="Tailwind CSS" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/shadcnui" alt="shadcn/ui" title="shadcn/ui" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/reactrouter" alt="React Router" title="React Router" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/reactquery" alt="TanStack Query" title="TanStack Query" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/tanstack/000000/ECE8D1" alt="TanStack Table" title="TanStack Table" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/axios" alt="Axios" title="Axios" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/reacthookform" alt="React Hook Form" title="React Hook Form" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/zod" alt="Zod" title="Zod" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/i18next" alt="i18next" title="i18next" width="40" height="40"/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/eslint/eslint-original.svg" alt="ESLint" title="ESLint" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/prettier" alt="Prettier" title="Prettier" width="40" height="40"/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vitest/vitest-original.svg" alt="Vitest" title="Vitest" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/testinglibrary" alt="Testing Library" title="Testing Library" width="40" height="40"/>
+  <img src="https://cdn.simpleicons.org/cloudflarepages" alt="Cloudflare Pages" title="Cloudflare Pages" width="40" height="40"/>
+</p>
+
+The design system is built on shadcn/ui (Radix primitives for keyboard and ARIA behavior, lucide-react icons), restyled with two token layers, primitive scales and semantic names, in `src/index.css`. Every shared control (button, input, card, badge, segmented toggle, select, data table) is a shadcn component. The typeface is Inter, self-hosted (Latin subset).
+
+<img src="public/favicon.svg" alt="Contacompa logo" width="32" height="32"/>
+
+The brand is Contacompa: a stamped-receipt mark in terracotta on neutral grays. The mark and the mark with wordmark are React SVG components (`src/components/brand/`) drawn in `currentColor`, so they follow the theme. `public/` holds the favicon and the SVG sources of the Apple touch icon (180×180) and the link preview image (1200×630); their PNGs are rendered from those sources.
+
+## Project structure
+
+```text
+src/
+├── app/          # providers, router, i18n, env config, sidebar modules
+├── components/   # app layout, brand (logo) and shared UI (button, card, table, select)
+├── features/     # one folder per capability: api, hooks, types, pages, components
+│   ├── documents/   # purchase docs list, detail, corrections, export
+│   ├── jobs/        # upload, job status, retry
+│   ├── costs/       # cost report
+│   └── session/     # API key sign-in and route guard
+└── lib/          # HTTP client, key storage, formatting, theme
+```
+
+## Environment variables
+
+Create a `.env.local` file in the repository root:
+
+```dotenv
+# Base URL of the Contacompa API
+VITE_API_URL=http://localhost:8000
+```
+
+It is read at build time, so a change needs a restart of `npm run dev` or a new build. Never commit `.env.local`.
+
+## Getting started
+
+Requires Node 22 (`.nvmrc`) and the API running locally.
 
 ```bash
 nvm use
 npm ci
-# Create .env.local with VITE_API_URL=http://localhost:8000
 npm run dev
 ```
 
-Open `http://localhost:5173`; it asks for an API key (see Sign-in).
+Open `http://localhost:5173` and paste an API key minted by the API.
 
-## Sign-in
-
-There are no usernames or passwords (backend ADR 0015). The owner mints an API key (12 hours by default, up to a week) for a company with the admin key, `POST /v1/api-keys` (Swagger at `https://contacompa.onrender.com/docs`, or the `curl` in the backend `docs/quickstart.md`), and hands it to the accountant, who pastes it on `/sign-in`.
-
-- The page checks the key with `GET /v1/me` before storing it. An invalid or expired key shows an error and stores nothing.
-- The key lives in this browser's localStorage (`doc-extraction.api-key`), so it survives reloads and is readable by any script on the page. On reload a loading state shows while `/v1/me` re-checks it.
-- Opening any page without a valid key goes to `/sign-in?next=<path>`; after sign-in the dashboard returns to `next` only if it is a path inside the dashboard, otherwise to Purchase docs.
-- Any 401 (for example the key expired) clears the key and every cached query and returns to sign-in with the current path as `next`. A 403 shows the error and keeps the session.
-- Sign-out in the sidebar does the same clearing. The time left shown there is display only; the next request after expiry gets the 401.
+## Quality checks
 
 ```bash
 npm run lint
 npm run typecheck
-npm run build
 npm test
+npm run build
 ```
-
-## Routes
-
-| Path                            | Page                                                     |
-| ------------------------------- | -------------------------------------------------------- |
-| `/sign-in`                      | Sign-in with the API key (the only public page)          |
-| `/extraction/purchase-docs`     | Extraction operations: purchase docs list (landing page) |
-| `/extraction/purchase-docs/:id` | Extraction operations: purchase doc detail               |
-| `/extraction/jobs`              | Extraction operations: Jobs tab                          |
-| `/monitor/costs`                | Monitor: Costs                                           |
-
-`/`, `/extraction`, `/monitor` and unknown paths redirect to a landing page (`/extraction`: purchase docs, `/monitor`: Costs, everything else: purchase docs).
 
 ## Deployment
 
-**Live:** `https://contacompa-fe.pages.dev` on Cloudflare Pages (free plan), talking to the API at `https://contacompa.onrender.com` (Render Free; the first request after idle is slow because the service sleeps). It needs an API key (12 hours by default, up to a week) minted by the owner; there is no demo mode.
-
-![Demo: sign in, upload, extraction, corrections](assets/demo.gif) <!-- demo GIF placeholder: record it after the first live run -->
-
-```text
-Browser ──► Cloudflare Pages (static build of this repo) ──HTTPS + X-API-Key──► Render API + worker ──► Neon Postgres + Object Storage
-```
-
-Pages settings: build command `npm run build`, output directory `dist`, Node from `.nvmrc`, and the environment variable `VITE_API_URL=https://contacompa.onrender.com`. It is read at build time (`src/app/config/env.ts`), so changing it needs a new build. `public/_redirects` (`/* /index.html 200`) is copied to `dist` so deep links such as `/extraction/purchase-docs/<id>` load the app instead of a 404. The API must list the Pages origin in its `CORS_ORIGINS` (a JSON list, for example `["https://contacompa-fe.pages.dev"]`); see the backend repository's deployment notes.
-
-The app groups API calls, query keys, hooks, and page components under `src/features/{documents,jobs,costs,session}` (`documents` and `jobs` belong to Extraction operations, `costs` to Monitor, `session` owns the stored key, `/v1/me`, sign-in, the private-route guard and the sidebar session panel). The `/v1/monitor` endpoint keeps its name; the `jobs` feature reads it. Shared UI lives in `src/components`; HTTP and formatting helpers live in `src/lib`.
+Static build on Cloudflare Pages: build command `npm run build`, output `dist`, and `VITE_API_URL` set at build time. `public/_redirects` sends every path to `index.html` so deep links work. The API must allow the Pages origin in `CORS_ORIGINS`.

@@ -1,13 +1,10 @@
-import { cn } from '@/lib/cn'
-
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 type SegmentedProps<T extends string> = {
   label: string
   value: T
   options: { value: T; label: string }[]
   onChange: (value: T) => void
 }
-
-/** A small radio group drawn as joined buttons (tabs, language, theme). */
 export function Segmented<T extends string>({
   label,
   value,
@@ -15,25 +12,26 @@ export function Segmented<T extends string>({
   onChange,
 }: SegmentedProps<T>) {
   return (
-    <div role="radiogroup" aria-label={label} className="flex gap-0.5 rounded-lg bg-muted p-0.5">
+    <ToggleGroup
+      type="single"
+      role="radiogroup"
+      aria-label={label}
+      value={value}
+      spacing={1}
+      onValueChange={(next) => {
+        if (next) onChange(next as T)
+      }}
+      className="rounded-full bg-muted p-0.5"
+    >
       {options.map((option) => (
-        <button
+        <ToggleGroupItem
           key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={value === option.value}
-          onClick={() => onChange(option.value)}
-          className={cn(
-            'rounded-md px-2.5 py-1 text-xs font-medium',
-            'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-            value === option.value
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
+          value={option.value}
+          className="h-auto rounded-full px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
         >
           {option.label}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   )
 }

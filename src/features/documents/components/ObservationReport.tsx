@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardTitle, Stat } from '@/components/ui/card'
 import { ErrorNote } from '@/components/ui/input'
@@ -12,52 +13,73 @@ import { observationLabel } from '../observations'
 export function ObservationReport({ onPickCode }: { onPickCode: (code: string) => void }) {
   const { t } = useTranslation()
   const report = useObservationReport()
-  if (report.error) return <ErrorNote message={toApiError(report.error).message} />
+  if (report.error && !report.data) return <ErrorNote message={toApiError(report.error).message} />
   const data = report.data
   return (
     <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
-      <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
-        <Stat label={t('report.documents')} value={data?.documents ?? '—'} />
-        <Stat label={t('report.clean')} value={data?.clean ?? '—'} />
-        <Stat label={t('report.withWarnings')} value={data?.with_warnings ?? '—'} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
+        <Stat
+          label={t('report.documents')}
+          value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.documents ?? '—')}
+        />
+        <Stat
+          label={t('report.clean')}
+          value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.clean ?? '—')}
+        />
+        <Stat
+          label={t('report.withWarnings')}
+          value={
+            report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.with_warnings ?? '—')
+          }
+        />
       </div>
-      <Card>
+      <Card className="min-w-0">
         <CardTitle hint={t('report.hint')}>{t('report.title')}</CardTitle>
-        {data && data.by_code.length === 0 ? (
+        {report.isLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 5 }, (_, i) => (
+              <Skeleton key={i} className="h-6 w-full" />
+            ))}
+          </div>
+        ) : data && data.by_code.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t('report.empty')}</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="py-1 font-semibold">{t('report.code')}</th>
-                <th className="py-1 font-semibold">{t('report.severity')}</th>
-                <th className="py-1 text-right font-semibold">{t('report.occurrences')}</th>
-                <th className="py-1 text-right font-semibold">{t('report.affected')}</th>
-              </tr>
-            </thead>
-            <tbody className="tabular-nums">
-              {(data?.by_code ?? []).map((row) => (
-                <tr key={row.code} className="border-t border-border">
-                  <td className="py-1.5">
-                    <button
-                      type="button"
-                      onClick={() => onPickCode(row.code)}
-                      className="text-left font-medium text-primary hover:underline"
-                    >
-                      {observationLabel(t, row.code)}
-                    </button>
-                  </td>
-                  <td className="py-1.5">
-                    <Badge tone={row.severity === 'warning' ? 'warning' : 'info'}>
-                      {t(`severity.${row.severity}`)}
-                    </Badge>
-                  </td>
-                  <td className="py-1.5 text-right">{row.occurrences}</td>
-                  <td className="py-1.5 text-right">{row.documents}</td>
+          <div className="max-w-full min-w-0 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-muted text-left text-xs text-muted-foreground">
+                <tr>
+                  <th className="sticky left-0 z-10 border-r border-border bg-muted py-1 pr-2 font-semibold">
+                    {t('report.code')}
+                  </th>
+                  <th className="py-1 font-semibold">{t('report.severity')}</th>
+                  <th className="py-1 text-right font-semibold">{t('report.occurrences')}</th>
+                  <th className="py-1 text-right font-semibold">{t('report.affected')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="tabular-nums">
+                {(data?.by_code ?? []).map((row) => (
+                  <tr key={row.code} className="border-t border-border">
+                    <td className="sticky left-0 z-10 border-r border-border bg-card py-1.5 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => onPickCode(row.code)}
+                        className="text-left font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                      >
+                        {observationLabel(t, row.code)}
+                      </button>
+                    </td>
+                    <td className="py-1.5">
+                      <Badge tone={row.severity === 'warning' ? 'warning' : 'info'}>
+                        {t(`severity.${row.severity}`)}
+                      </Badge>
+                    </td>
+                    <td className="py-1.5 text-right">{row.occurrences}</td>
+                    <td className="py-1.5 text-right">{row.documents}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </Card>
     </div>

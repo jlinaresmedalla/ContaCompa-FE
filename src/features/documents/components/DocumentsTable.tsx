@@ -1,6 +1,7 @@
+import { ChevronRight } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
@@ -21,7 +22,7 @@ function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
     <Button
       size="sm"
       variant="ghost"
-      className="text-danger"
+      className="text-destructive"
       disabled={remove.isPending}
       onClick={() => {
         if (window.confirm(t('documents.confirmDelete', { name: doc.doc_number ?? '?' })))
@@ -48,9 +49,16 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
           aria-expanded={row.getIsExpanded()}
           aria-label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
           title={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
-          className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
         >
-          <span className={row.getIsExpanded() ? 'rotate-90 transition' : 'transition'}>▸</span>
+          <ChevronRight
+            aria-hidden="true"
+            className={
+              row.getIsExpanded()
+                ? 'size-4 rotate-90 transition-transform duration-150'
+                : 'size-4 transition-transform duration-150'
+            }
+          />
         </button>
       ),
     },
@@ -59,7 +67,7 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       cell: ({ row }) => (
         <Link
           to={paths.purchaseDoc(row.original.id)}
-          className="font-medium whitespace-nowrap text-primary hover:underline"
+          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none font-medium whitespace-nowrap text-primary hover:underline"
         >
           {row.original.doc_number ?? '?'}
         </Link>
@@ -111,12 +119,9 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       header: '',
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
-          <Link
-            to={paths.purchaseDoc(row.original.id)}
-            className="inline-flex h-8 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
-          >
-            {t('common.open')}
-          </Link>
+          <Button asChild size="sm" variant="outline">
+            <Link to={paths.purchaseDoc(row.original.id)}>{t('common.open')}</Link>
+          </Button>
           <DeleteButton doc={row.original} />
         </div>
       ),
@@ -125,6 +130,7 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
 }
 
 export function DocumentsTable(props: {
+  empty?: ReactNode
   docs: PurchaseDocSummary[] | undefined
   isLoading: boolean
   error: string | null
@@ -137,7 +143,7 @@ export function DocumentsTable(props: {
       data={props.docs}
       isLoading={props.isLoading}
       error={props.error}
-      empty={t('documents.empty')}
+      empty={props.empty ?? t('documents.empty')}
       getRowId={(row) => row.id}
       renderSubRow={(row) => <LinePrices doc={row.original} />}
     />

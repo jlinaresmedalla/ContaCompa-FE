@@ -2,11 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { AppSelect } from '@/components/ui/app-select'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardTitle } from '@/components/ui/card'
-import { ErrorNote, Field, Input } from '@/components/ui/input'
-import { toApiError } from '@/lib/http'
+import { Field, Input } from '@/components/ui/input'
 
 import { useCorrectDoc } from '../hooks'
 import {
@@ -39,8 +44,12 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
   const onSubmit = handleSubmit(async (values) => {
     const payload = toPayload(defaults, values)
     if (Object.keys(payload.fields).length === 0 && payload.lines.length === 0) return
-    const updated = await correct.mutateAsync(payload)
-    reset(toForm(updated))
+    try {
+      const updated = await correct.mutateAsync(payload)
+      reset(toForm(updated))
+    } catch {
+      // The mutation reports the error; keep the edited values for another attempt.
+    }
   })
 
   const text = (name: TextField) => (
@@ -53,7 +62,7 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
     <form onSubmit={(event) => void onSubmit(event)} className="space-y-4">
       <Card>
         <CardTitle hint={t('detail.headerHint')}>{t('detail.header')}</CardTitle>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 [&>*]:min-w-0">
           {text('supplier_ruc')}
           {text('supplier_name')}
           <Field label={t('detail.fields.doc_type')}>
@@ -61,19 +70,29 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
               control={control}
               name="doc_type"
               render={({ field }) => (
-                <AppSelect
-                  inputId="doc_type"
-                  options={docTypes.map((value) => ({ value, label: t(`docType.${value}`) }))}
-                  value={field.value}
-                  onChange={(value) => field.onChange(value ?? 'other')}
-                  onBlur={field.onBlur}
-                />
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    id="doc_type"
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    aria-label={t('detail.fields.doc_type')}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {docTypes.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {t(`docType.${value}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             />
           </Field>
           {text('doc_number')}
           {text('issue_date')}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 [&>*]:min-w-0">
             {text('currency')}
             {text('total_amount')}
           </div>
@@ -82,13 +101,23 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
               control={control}
               name="prices_include_igv"
               render={({ field }) => (
-                <AppSelect
-                  inputId="prices_include_igv"
-                  options={IGV.map((value) => ({ value, label: t(`detail.igv.${value}`) }))}
-                  value={field.value}
-                  onChange={(value) => field.onChange(value ?? 'unknown')}
-                  onBlur={field.onBlur}
-                />
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    id="prices_include_igv"
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    aria-label={t('detail.fields.prices_include_igv')}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {IGV.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {t(`detail.igv.${value}`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             />
           </Field>
@@ -98,11 +127,13 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
 
       <Card>
         <CardTitle hint={t('detail.linesHint')}>{t('detail.lines')}</CardTitle>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-left text-xs text-muted-foreground">
+        <div className="max-w-full min-w-0 overflow-x-auto">
+          <table className="w-full min-w-max text-sm">
+            <thead className="bg-muted text-left text-xs text-muted-foreground">
               <tr>
-                <th className="py-1 pr-2 font-semibold">#</th>
+                <th className="sticky left-0 z-10 border-r border-border bg-muted py-1 pr-2 font-semibold">
+                  #
+                </th>
                 <th className="py-1 pr-2 font-semibold">{t('detail.fields.description')}</th>
                 {LINE_INPUTS.map((name) => (
                   <th key={name} className="py-1 pr-2 font-semibold">
@@ -117,7 +148,9 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
                 const lineLabel = t('detail.line', { n: line.line_number })
                 return (
                   <tr key={line.key} className="align-top">
-                    <td className="py-1 pr-2 text-muted-foreground">{line.line_number}</td>
+                    <td className="sticky left-0 z-10 border-r border-border bg-card py-1 pr-2 text-muted-foreground">
+                      {line.line_number}
+                    </td>
                     <td className="py-1 pr-2">
                       <Input
                         aria-label={`${lineLabel} ${t('detail.fields.description')}`}
@@ -133,7 +166,7 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
                           {...register(`lines.${index}.${name}`)}
                         />
                         {lineErrors?.[name] ? (
-                          <span className="text-xs text-danger">
+                          <span className="text-xs text-destructive">
                             {message(lineErrors[name]?.message)}
                           </span>
                         ) : null}
@@ -147,7 +180,6 @@ export function CorrectionForm({ doc }: { doc: PurchaseDocDetail }) {
         </div>
       </Card>
 
-      {correct.error ? <ErrorNote message={toApiError(correct.error).message} /> : null}
       <div className="flex flex-wrap items-center gap-2">
         <Button type="submit" disabled={!isDirty || correct.isPending}>
           {correct.isPending ? t('detail.saving') : t('detail.save')}

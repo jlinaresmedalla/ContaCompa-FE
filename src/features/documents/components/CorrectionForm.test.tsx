@@ -55,7 +55,7 @@ beforeEach(() => {
 test('submits only edited header and line values in the existing PATCH shape', async () => {
   render(<CorrectionForm doc={doc} />)
   fireEvent.change(screen.getByLabelText('Supplier'), { target: { value: 'Corrected name' } })
-  fireEvent.change(screen.getByLabelText('Line 1 Qty'), { target: { value: '3' } })
+  fireEvent.change(screen.getByLabelText('Line 1 Quantity'), { target: { value: '3' } })
   fireEvent.click(screen.getByRole('button', { name: 'Save corrections' }))
   await waitFor(() =>
     expect(correct).toHaveBeenCalledWith({
@@ -63,4 +63,38 @@ test('submits only edited header and line values in the existing PATCH shape', a
       lines: [{ id: 'line-1', quantity: '3' }],
     }),
   )
+})
+
+async function pickSalesReceiptWithKeyboard() {
+  const trigger = screen.getByRole('combobox', { name: 'Type' })
+  trigger.focus()
+  fireEvent.keyDown(trigger, { key: 'Enter' })
+  const invoice = await screen.findByRole('option', { name: 'Invoice' })
+  await waitFor(() => expect(invoice).toHaveFocus())
+  fireEvent.keyDown(invoice, { key: 'ArrowDown' })
+  const receipt = screen.getByRole('option', { name: 'Sales receipt' })
+  await waitFor(() => expect(receipt).toHaveFocus())
+  fireEvent.keyDown(receipt, { key: 'Enter' })
+  await waitFor(() => expect(screen.queryByRole('listbox')).not.toBeInTheDocument())
+  return trigger
+}
+
+test('saves a document type picked through the keyboard Select in the correction payload', async () => {
+  render(<CorrectionForm doc={doc} />)
+  await pickSalesReceiptWithKeyboard()
+  fireEvent.click(screen.getByRole('button', { name: 'Save corrections' }))
+  await waitFor(() =>
+    expect(correct).toHaveBeenCalledWith({
+      fields: { doc_type: 'sales_receipt' },
+      lines: [],
+    }),
+  )
+})
+
+test('opens, moves and picks the Select using only the keyboard and shows the picked label', async () => {
+  render(<CorrectionForm doc={doc} />)
+  const trigger = await pickSalesReceiptWithKeyboard()
+  expect(trigger).toHaveTextContent('Sales receipt')
+  await waitFor(() => expect(trigger).toHaveFocus())
+  expect(correct).not.toHaveBeenCalled()
 })

@@ -21,15 +21,18 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+let meSpy = vi.fn()
+
 beforeEach(() => {
   void i18n.changeLanguage('en')
-  // Every page needs a signed-in session: a stored key that /v1/me accepts.
+  // Private routes start with a stored key that /v1/me accepts.
   localStorage.clear()
   apiKeyStore.set('key')
-  vi.spyOn(sessionApi, 'me').mockResolvedValue({
+  meSpy = vi.fn().mockResolvedValue({
     company: { ruc: '20543306771', legal_name: 'Acme SAC' },
     expires_at: new Date(Date.now() + 3_600_000).toISOString(),
   })
+  vi.spyOn(sessionApi, 'me').mockImplementation(meSpy)
 })
 
 function renderAt(path: string) {
@@ -42,16 +45,13 @@ function renderAt(path: string) {
   return router
 }
 
-test('sidebar lists Extraction operations and Monitor, not Assistant', async () => {
+test('sidebar lists Extraction and Monitor, not Assistant', async () => {
   renderAt('/extraction/purchase-docs')
   const nav = await screen.findByRole('navigation', { name: 'Modules' })
-  expect(nav).toHaveTextContent('Extraction operations')
+  expect(nav).toHaveTextContent('Extraction')
   expect(nav).toHaveTextContent('Monitor')
   expect(screen.queryByRole('link', { name: /assistant/i })).toBeNull()
-  expect(screen.getByRole('link', { name: 'Extraction operations' })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
+  expect(screen.getByRole('link', { name: 'Extraction' })).toHaveAttribute('aria-current', 'page')
 })
 
 test.each([
@@ -64,7 +64,7 @@ test.each([
   expect(await screen.findByText(text)).toBeInTheDocument()
 })
 
-test('Extraction operations shows Purchase docs and Jobs tabs; Monitor shows none', async () => {
+test('Extraction shows Purchase docs and Jobs tabs; Monitor shows none', async () => {
   renderAt('/extraction/jobs')
   const tabs = await screen.findByRole('navigation', { name: 'Module pages' })
   expect(tabs).toHaveTextContent('Purchase docs')
@@ -89,7 +89,7 @@ test('Monitor has a single page, so no tabs, and its module link is current', as
   expect(screen.queryByRole('navigation', { name: 'Module pages' })).toBeNull()
 })
 
-test.each(['/', '/nowhere', '/documents', '/assistant', '/extraction', '/costs'])(
+test.each(['/nowhere', '/documents', '/assistant', '/extraction', '/costs'])(
   '%s redirects to purchase docs',
   async (path) => {
     const router = renderAt(path)
@@ -109,4 +109,48 @@ test('language, theme and sign-out live in the sidebar', async () => {
   expect(sidebar).toContainElement(screen.getByRole('radiogroup', { name: 'Language' }))
   expect(sidebar).toContainElement(screen.getByRole('radiogroup', { name: 'Theme' }))
   expect(sidebar).toContainElement(screen.getByRole('button', { name: 'Sign out' }))
+})
+
+test.each([null, 'key'])(
+  '/ renders public Home with key %s without checking the API',
+  async (key) => {
+    if (key === null) apiKeyStore.clear()
+    const router = renderAt('/')
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Purchase documents, read for you.',
+    )
+    expect(router.state.location.pathname).toBe('/')
+    expect(meSpy).not.toHaveBeenCalled()
+  },
+)
+
+test('an unknown path without a key redirects to Home', async () => {
+  apiKeyStore.clear()
+  const router = renderAt('/nowhere')
+  expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+    'Purchase documents, read for you.',
+  )
+  expect(router.state.location.pathname).toBe('/')
+  expect(meSpy).not.toHaveBeenCalled()
+})
+
+test('a private path without a key keeps its return path at sign-in', async () => {
+  apiKeyStore.clear()
+  const router = renderAt('/extraction/jobs?filter=queued')
+  await screen.findByRole('button', { name: 'Sign in' })
+  expect(router.state.location.pathname).toBe('/sign-in')
+  expect(new URLSearchParams(router.state.location.search).get('next')).toBe(
+    '/extraction/jobs?filter=queued',
+  )
+  expect(meSpy).not.toHaveBeenCalled()
+})
+
+test('/design is public without a stored key', async () => {
+  apiKeyStore.clear()
+  const router = renderAt('/design')
+  expect(
+    await screen.findByRole('heading', { name: 'Design system', level: 1 }),
+  ).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe('/design')
+  expect(meSpy).not.toHaveBeenCalled()
 })

@@ -69,7 +69,9 @@ export function UploadDropzone() {
             <li key={`${item.name}-${index}`} className="flex items-center gap-2">
               <Badge tone={tone[item.state]}>{t(`jobs.uploadState.${item.state}`)}</Badge>
               <span className="truncate">{item.name}</span>
-              {item.message ? <span className="text-xs text-danger">{item.message}</span> : null}
+              {item.message ? (
+                <span className="text-xs text-destructive">{item.message}</span>
+              ) : null}
             </li>
           ))}
         </ul>

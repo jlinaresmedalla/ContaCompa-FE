@@ -1,8 +1,12 @@
+import { FileText, Search } from 'lucide-react'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
+import { paths } from '@/app/router/paths'
+import { PageHeader } from '@/components/ui/page-header'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ErrorNote } from '@/components/ui/input'
 import { Segmented } from '@/components/ui/segmented'
 import { toApiError } from '@/lib/http'
 
@@ -22,9 +26,21 @@ export function DocumentsPage() {
   const exportXlsx = useExportXlsx()
   return (
     <div className="space-y-6">
-      <h1 className="text-lg font-semibold">{t('nav.purchaseDocs')}</h1>
+      <PageHeader
+        title={t('nav.purchaseDocs')}
+        description={t('pageStates.documents')}
+        actions={
+          <Button
+            variant="outline"
+            disabled={exportXlsx.isPending}
+            onClick={() => exportXlsx.mutate(i18n.language)}
+          >
+            {exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
+          </Button>
+        }
+      />
       <ObservationReport onPickCode={(code) => setFilters({ observations: 'all', code })} />
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 [&>[role=radiogroup]]:max-w-full [&>[role=radiogroup]]:flex-wrap">
         <Segmented<ObservationFilter>
           label={t('documents.filterLabel')}
           value={filters.observations}
@@ -32,40 +48,54 @@ export function DocumentsPage() {
           onChange={(observations) => setFilters({ observations, code: null })}
         />
         {filters.code ? (
-          <span className="flex items-center gap-2">
+          <span className="flex min-w-0 max-w-full flex-wrap items-center gap-2 [&>[data-slot=badge]]:whitespace-normal">
             <Badge tone="info">
               {t('documents.codeFilter', { code: observationLabel(t, filters.code) })}
             </Badge>
             <button
               type="button"
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
               onClick={() => setFilters({ ...filters, code: null })}
             >
               {t('documents.clearCode')}
             </button>
           </span>
         ) : null}
-        <Button
-          className="ml-auto"
-          variant="outline"
-          disabled={exportXlsx.isPending}
-          onClick={() => exportXlsx.mutate(i18n.language)}
-        >
-          {exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
-        </Button>
       </div>
-      {exportXlsx.data ? (
-        <p className="text-xs text-muted-foreground">
-          {t('documents.exported', { count: exportXlsx.data.count })}
-        </p>
-      ) : null}
-      {exportXlsx.error ? <ErrorNote message={toApiError(exportXlsx.error).message} /> : null}
       <DocumentsTable
+        empty={
+          filters.observations !== 'all' || filters.code ? (
+            <EmptyState
+              icon={Search}
+              title={t('pageStates.filteredTitle')}
+              description={t('pageStates.filteredDescription')}
+              action={
+                <Button
+                  variant="outline"
+                  onClick={() => setFilters({ observations: 'all', code: null })}
+                >
+                  {t('pageStates.clear')}
+                </Button>
+              }
+            />
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title={t('pageStates.docsTitle')}
+              description={t('pageStates.docsDescription')}
+              action={
+                <Button asChild>
+                  <Link to={paths.jobs}>{t('pageStates.upload')}</Link>
+                </Button>
+              }
+            />
+          )
+        }
         docs={docs.data?.items}
         isLoading={docs.isLoading}
         error={docs.error ? toApiError(docs.error).message : null}
       />
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         <Button
           variant="outline"
           disabled={offset === 0 || docs.isLoading}

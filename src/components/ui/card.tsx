@@ -1,21 +1,95 @@
-import type { HTMLAttributes, ReactNode } from 'react'
-
+import * as React from 'react'
 import { cn } from '@/lib/cn'
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('rounded-lg border border-border bg-card p-4', className)} {...props} />
+function Card({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        'rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-md',
+        className,
+      )}
+      {...props}
+    />
+  )
 }
 
-export function CardTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
+function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className="mb-3 flex items-baseline justify-between gap-3">
+    <div
+      data-slot="card-header"
+      className={cn(
+        '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-4',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({
+  className,
+  children,
+  hint,
+  ...props
+}: React.ComponentProps<'div'> & { hint?: React.ReactNode }) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn('mb-3 flex items-baseline justify-between gap-3', className)}
+      {...props}
+    >
       <h2 className="text-sm font-semibold">{children}</h2>
       {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
     </div>
   )
 }
 
-export function Stat({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) {
+function CardDescription({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
+  return <div data-slot="card-content" className={className} {...props} />
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn('flex items-center [.border-t]:pt-4', className)}
+      {...props}
+    />
+  )
+}
+
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent }
+
+export function Stat({
+  label,
+  value,
+  sub,
+}: {
+  label: string
+  value: React.ReactNode
+  sub?: React.ReactNode
+}) {
   return (
     <Card>
       <div className="text-xs text-muted-foreground">{label}</div>

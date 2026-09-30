@@ -7,9 +7,16 @@ import {
   type Row,
 } from '@tanstack/react-table'
 import { Fragment, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
-
 import { ErrorNote } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { cn } from '@/lib/cn'
 
 type DataTableProps<T> = {
@@ -17,13 +24,13 @@ type DataTableProps<T> = {
   data: T[] | undefined
   isLoading: boolean
   error?: string | null
-  empty: string
+  empty: ReactNode
   getRowId?: (row: T) => string
   /** When set, rows can expand to show this under them (master-detail). */
   renderSubRow?: (row: Row<T>) => ReactNode
 }
 
-/** Project table: TanStack Table for column logic, plain semantic markup for rendering. */
+/** Project table: TanStack Table for column logic, shadcn Table for rendering. */
 export function DataTable<T>({
   columns,
   data,
@@ -33,7 +40,6 @@ export function DataTable<T>({
   getRowId,
   renderSubRow,
 }: DataTableProps<T>) {
-  const { t } = useTranslation()
   // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table v8 returns a stable instance
   const table = useReactTable({
     data: data ?? [],
@@ -43,57 +49,88 @@ export function DataTable<T>({
     getRowCanExpand: () => Boolean(renderSubRow),
     getRowId,
   })
-  if (error) return <ErrorNote message={error} />
+  if (error && data === undefined) return <ErrorNote message={error} />
   const rows = table.getRowModel().rows
   const width = table.getVisibleLeafColumns().length
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-card">
-      <table className="w-full text-sm">
-        <thead className="border-b border-border bg-muted text-left text-xs text-muted-foreground">
+    <div className="max-w-full min-w-0 rounded-lg border border-border bg-card">
+      <Table className="w-full text-sm">
+        <TableHeader className="border-b border-border bg-muted text-left text-xs text-muted-foreground">
           {table.getHeaderGroups().map((group) => (
-            <tr key={group.id}>
-              {group.headers.map((header) => (
-                <th key={header.id} className="px-3 py-2 font-semibold whitespace-nowrap">
+            <TableRow key={group.id}>
+              {group.headers.map((header, index) => (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    'px-3 py-2 font-semibold whitespace-nowrap text-muted-foreground',
+                    index === 0 && 'sticky left-0 z-10 border-r border-border bg-muted',
+                  )}
+                >
                   {flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
+                </TableHead>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </thead>
-        <tbody>
-          {isLoading || rows.length === 0 ? (
-            <tr>
-              <td colSpan={width} className="px-3 py-6 text-center text-muted-foreground">
-                {isLoading ? t('common.loading') : empty}
-              </td>
-            </tr>
+        </TableHeader>
+        <TableBody>
+          {isLoading && data === undefined ? (
+            Array.from({ length: 5 }, (_, index) => (
+              <TableRow key={index} className="group hover:bg-muted">
+                {table.getVisibleLeafColumns().map((column, index) => (
+                  <TableCell
+                    key={column.id}
+                    className={cn(
+                      'px-3 py-3',
+                      index === 0 &&
+                        'sticky left-0 z-10 border-r border-border bg-card group-hover:bg-muted',
+                    )}
+                  >
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={width} className="px-3 py-6 text-center text-muted-foreground">
+                {empty}
+              </TableCell>
+            </TableRow>
           ) : (
             rows.map((row) => (
               <Fragment key={row.id}>
-                <tr
+                <TableRow
                   className={cn(
-                    'border-b border-border hover:bg-muted/60',
-                    row.getIsExpanded() && 'bg-muted/60',
+                    'group border-b border-border hover:bg-muted has-aria-expanded:bg-card has-aria-expanded:hover:bg-muted',
+                    row.getIsExpanded() && 'bg-muted has-aria-expanded:bg-muted',
                   )}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-3 py-2 align-top">
+                  {row.getVisibleCells().map((cell, index) => (
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        'px-3 py-2 align-top whitespace-normal',
+                        index === 0 &&
+                          'sticky left-0 z-10 border-r border-border bg-card group-hover:bg-muted',
+                        index === 0 && row.getIsExpanded() && 'bg-muted',
+                      )}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+                    </TableCell>
                   ))}
-                </tr>
+                </TableRow>
                 {row.getIsExpanded() && renderSubRow ? (
-                  <tr className="border-b border-border bg-background">
-                    <td colSpan={width} className="px-3 py-3">
+                  <TableRow className="border-b border-border bg-background">
+                    <TableCell colSpan={width} className="px-3 py-3 whitespace-normal">
                       {renderSubRow(row)}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : null}
               </Fragment>
             ))
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   )
 }

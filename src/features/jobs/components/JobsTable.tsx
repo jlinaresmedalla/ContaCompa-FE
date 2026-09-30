@@ -1,3 +1,4 @@
+import { Upload } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
@@ -7,6 +8,7 @@ import { Link } from 'react-router'
 import { paths } from '@/app/router/paths'
 import { Badge, type BadgeTone } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import { DataTable } from '@/components/ui/data-table'
 import { dateTime, seconds } from '@/lib/format'
 
@@ -56,7 +58,7 @@ function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[
             {t(`jobStatus.${row.original.status}`)}
           </Badge>
           {row.original.last_error ? (
-            <span className="max-w-64 text-xs text-danger">{row.original.last_error}</span>
+            <span className="max-w-64 text-xs text-destructive">{row.original.last_error}</span>
           ) : null}
         </div>
       ),
@@ -76,7 +78,10 @@ function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[
         const { purchase_doc_id: id, doc_number, observations, warnings } = row.original
         if (!id) return <span className="text-muted-foreground">—</span>
         return (
-          <Link to={paths.purchaseDoc(id)} className="flex items-center gap-2 hover:underline">
+          <Link
+            to={paths.purchaseDoc(id)}
+            className="flex items-center gap-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+          >
             <span className="font-medium text-primary">{doc_number ?? t('common.open')}</span>
             <Badge tone={observations === 0 ? 'success' : warnings ? 'warning' : 'info'}>
               {observations === 0
@@ -98,9 +103,11 @@ function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[
 
 export function JobsTable({
   jobs,
+  onUpload,
   isLoading,
   error,
 }: {
+  onUpload: () => void
   jobs: JobRow[] | undefined
   isLoading: boolean
   error: string | null
@@ -113,7 +120,14 @@ export function JobsTable({
       data={jobs}
       isLoading={isLoading}
       error={error}
-      empty={t('jobs.empty')}
+      empty={
+        <EmptyState
+          icon={Upload}
+          title={t('pageStates.jobsTitle')}
+          description={t('pageStates.jobsDescription')}
+          action={<Button onClick={onUpload}>{t('pageStates.upload')}</Button>}
+        />
+      }
       getRowId={(row) => row.job_id}
     />
   )

@@ -1,18 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
 
-import { documentApi } from './api'
+import { documentApi, documentKeys } from './api'
 import { DocumentsPage } from './DocumentsPage'
 
-vi.mock('./components/DocumentsTable', () => ({
-  DocumentsTable: ({ docs }: { docs?: unknown[] }) => (
-    <div data-testid="rows">{docs?.length ?? 0}</div>
-  ),
-}))
 vi.mock('./components/ObservationReport', () => ({ ObservationReport: () => null }))
 
 beforeEach(() => {
@@ -63,5 +58,93 @@ test('uses next_offset and resets to the first page when filters change', async 
     ),
   )
   expect(screen.getByText('Page 1')).toBeInTheDocument()
+  list.mockRestore()
+})
+
+function renderPage(entry = '/') {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const view = render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[entry]}>
+        <DocumentsPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+  return { client, ...view }
+}
+
+test('offers upload on Jobs when there are no purchase docs', async () => {
+  const list = vi.spyOn(documentApi, 'list').mockResolvedValue({ items: [], next_offset: null })
+  renderPage()
+  expect(await screen.findByRole('link', { name: 'Upload files' })).toHaveAttribute(
+    'href',
+    '/extraction/jobs',
+  )
+  list.mockRestore()
+})
+
+test.each(['/?obs=warning', '/?code=amount_mismatch'])(
+  'clears active filters from %s',
+  async (entry) => {
+    const list = vi.spyOn(documentApi, 'list').mockResolvedValue({ items: [], next_offset: null })
+    renderPage(entry)
+    fireEvent.click(await screen.findByRole('button', { name: 'Clear filters' }))
+    await waitFor(() =>
+      expect(list).toHaveBeenCalledWith(
+        { observations: 'all', code: null },
+        0,
+        expect.any(AbortSignal),
+      ),
+    )
+    expect(await screen.findByRole('link', { name: 'Upload files' })).toBeInTheDocument()
+    list.mockRestore()
+  },
+)
+
+test('keeps rows visible without skeletons during a background refetch', async () => {
+  const data = {
+    items: [
+      {
+        id: 'doc-1',
+        supplier: null,
+        doc_type: 'invoice' as const,
+        doc_number: 'F001-123',
+        issue_date: null,
+        currency: 'PEN',
+        total_amount: '118',
+        prices_include_igv: true,
+        taxable_amount: '100',
+        igv_amount: '18',
+        has_warnings: false,
+        issues: [],
+        lines: [],
+      },
+    ],
+    next_offset: null,
+  }
+  let finish!: (value: typeof data) => void
+  const list = vi
+    .spyOn(documentApi, 'list')
+    .mockResolvedValueOnce(data)
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+  const { client, container } = renderPage()
+  expect(await screen.findByRole('link', { name: 'F001-123' })).toBeInTheDocument()
+  let refresh!: Promise<void>
+  act(() => {
+    refresh = client.invalidateQueries({ queryKey: documentKeys.lists() })
+  })
+  await waitFor(() => expect(list).toHaveBeenCalledTimes(2))
+  expect(client.isFetching()).toBe(1)
+  expect(screen.getByRole('link', { name: 'F001-123' })).toBeInTheDocument()
+  expect(container.querySelector('[data-slot="skeleton"]')).toBeNull()
+  await act(async () => {
+    finish(data)
+    await refresh
+  })
   list.mockRestore()
 })

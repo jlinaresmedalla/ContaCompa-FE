@@ -1,4 +1,6 @@
 export const paths = {
+  home: '/',
+  design: '/design',
   signIn: '/sign-in',
   extraction: '/extraction',
   purchaseDocs: '/extraction/purchase-docs',

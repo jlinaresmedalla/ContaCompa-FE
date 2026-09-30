@@ -26,8 +26,8 @@ test('open breaker shows the banner with the next try in local time', () => {
   render(<PausedBanner provider={breaker({})} />)
   const banner = screen.getByRole('status')
   expect(banner.textContent).toContain('Extraction paused: the model provider is unavailable.')
-  expect(banner.textContent).toContain(`Next try at ${expectedTime()} (local time).`)
-  expect(banner.textContent).toContain('Queued jobs keep their attempts.')
+  expect(banner.textContent).toContain(`Next attempt at ${expectedTime()} (local time).`)
+  expect(banner.textContent).toContain('Waiting does not use up job attempts.')
 })
 
 test('half_open breaker shows the banner', () => {
@@ -37,9 +37,9 @@ test('half_open breaker shows the banner', () => {
 
 test('missing or unparseable open_until omits the time', () => {
   const { rerender } = render(<PausedBanner provider={breaker({ open_until: null })} />)
-  expect(screen.getByRole('status').textContent).not.toContain('Next try')
+  expect(screen.getByRole('status').textContent).not.toContain('Next attempt')
   rerender(<PausedBanner provider={breaker({ open_until: 'not a date' })} />)
-  expect(screen.getByRole('status').textContent).not.toContain('Next try')
+  expect(screen.getByRole('status').textContent).not.toContain('Next attempt')
 })
 
 test('closed, null and absent provider render nothing', () => {

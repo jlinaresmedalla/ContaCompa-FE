@@ -1,33 +1,40 @@
-import type { ButtonHTMLAttributes } from 'react'
-
+import * as React from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { Slot } from 'radix-ui'
 import { cn } from '@/lib/cn'
 
-const variants = {
-  primary: 'bg-primary text-primary-foreground hover:opacity-90',
-  outline: 'border border-border bg-card hover:bg-muted',
-  ghost: 'hover:bg-muted',
-  danger: 'bg-danger text-card hover:opacity-90',
-  success: 'bg-success text-card hover:opacity-90',
-} as const
-
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: keyof typeof variants
-  size?: 'sm' | 'md'
-}
-
-export function Button({ variant = 'primary', size = 'md', className, ...props }: ButtonProps) {
+const buttonVariants = cva(
+  'inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full font-medium whitespace-nowrap transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  {
+    variants: {
+      variant: {
+        primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        outline: 'border border-border bg-card text-card-foreground hover:bg-muted',
+        ghost: 'hover:bg-muted',
+        danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        success: 'bg-success text-primary-foreground hover:bg-success/90',
+      },
+      size: { sm: 'h-8 px-3 text-xs', md: 'h-9 px-4 text-sm', icon: 'size-9' },
+    },
+    defaultVariants: { variant: 'primary', size: 'md' },
+  },
+)
+function Button({
+  className,
+  variant = 'primary',
+  size = 'md',
+  asChild = false,
+  type,
+  ...props
+}: React.ComponentProps<'button'> & VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : 'button'
   return (
-    <button
-      type="button"
-      className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-lg font-medium transition',
-        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-        'disabled:pointer-events-none disabled:opacity-50',
-        size === 'sm' ? 'h-8 px-3 text-xs' : 'h-9 px-4 text-sm',
-        variants[variant],
-        className,
-      )}
+    <Comp
+      data-slot="button"
+      type={asChild ? type : (type ?? 'button')}
+      className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   )
 }
+export { Button, buttonVariants }

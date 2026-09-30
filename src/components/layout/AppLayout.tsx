@@ -1,13 +1,15 @@
+import { Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 
-import { LANGUAGES, setLanguage, type Language } from '@/app/i18n'
 import { moduleFor, visibleModules, type AppModule } from '@/app/modules'
-import { Segmented } from '@/components/ui/segmented'
+import { paths } from '@/app/router/paths'
+import { Logo, LogoMark } from '@/components/brand'
 import { SessionPanel } from '@/features/session'
 import { cn } from '@/lib/cn'
-import { applyTheme, storedTheme, THEMES, type Theme } from '@/lib/theme'
+
+import { PreferenceSwitches } from './PreferenceSwitches'
 
 export function AppLayout() {
   const { t } = useTranslation()
@@ -41,11 +43,19 @@ export function AppLayout() {
       <aside
         id="sidebar"
         className={cn(
-          'fixed inset-y-0 left-0 z-20 flex flex-col gap-4 overflow-y-auto border-r border-border bg-card p-2',
+          'fixed inset-y-0 left-0 z-20 flex flex-col gap-4 overflow-y-auto border-r border-border material p-2',
           open ? 'w-60 shadow-lg md:shadow-none' : 'w-14',
           'md:w-60',
         )}
       >
+        <Link
+          to={paths.home}
+          aria-label={t('pageStates.home')}
+          className={cn(SIDEBAR_ITEM, 'px-1')}
+        >
+          <Logo className={open ? '' : 'hidden md:inline-flex'} />
+          {!open ? <LogoMark className="size-8 shrink-0 text-primary md:hidden" /> : null}
+        </Link>
         <button
           type="button"
           aria-controls="sidebar"
@@ -54,17 +64,7 @@ export function AppLayout() {
           onClick={() => setMenu({ open: !open, key })}
           className={cn(SIDEBAR_ITEM, SIDEBAR_IDLE, 'md:hidden')}
         >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-5 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu className="size-5 shrink-0" aria-hidden="true" />
         </button>
         <nav aria-label={t('nav.main')} className="flex flex-col gap-1">
           {visibleModules.map((module) => {
@@ -87,12 +87,11 @@ export function AppLayout() {
           })}
         </nav>
         <div className={cn('mt-auto flex-col gap-3 px-1 pb-1', open ? 'flex' : 'hidden md:flex')}>
-          <LanguageSwitch />
-          <ThemeSwitch />
+          <PreferenceSwitches />
           <SessionPanel />
         </div>
       </aside>
-      <main className="mx-auto max-w-7xl px-4 py-6 pl-[4.5rem] md:pl-64">
+      <main className="mx-auto min-w-0 max-w-7xl [overflow-wrap:anywhere] px-4 py-6 pl-[4.5rem] md:pl-64">
         {current && current.pages.length > 1 ? <ModuleTabs module={current} /> : null}
         <Outlet />
       </main>
@@ -101,7 +100,7 @@ export function AppLayout() {
 }
 
 const SIDEBAR_ITEM =
-  'flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
+  'flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none'
 const SIDEBAR_ACTIVE = 'bg-primary font-medium text-primary-foreground'
 const SIDEBAR_IDLE = 'text-muted-foreground hover:bg-muted hover:text-foreground'
 
@@ -116,7 +115,7 @@ function ModuleTabs({ module }: { module: AppModule }) {
           to={page.to}
           className={({ isActive }) =>
             cn(
-              'rounded-lg px-3 py-1.5 text-sm',
+              'rounded-lg px-3 py-1.5 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none',
               isActive
                 ? 'bg-muted font-medium text-foreground'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -127,33 +126,5 @@ function ModuleTabs({ module }: { module: AppModule }) {
         </NavLink>
       ))}
     </nav>
-  )
-}
-
-function LanguageSwitch() {
-  const { t, i18n } = useTranslation()
-  return (
-    <Segmented<Language>
-      label={t('sidebar.language')}
-      value={i18n.language === 'en' ? 'en' : 'es'}
-      options={LANGUAGES.map((language) => ({ value: language, label: language.toUpperCase() }))}
-      onChange={setLanguage}
-    />
-  )
-}
-
-function ThemeSwitch() {
-  const { t } = useTranslation()
-  const [theme, setTheme] = useState<Theme>(storedTheme)
-  return (
-    <Segmented<Theme>
-      label={t('sidebar.theme')}
-      value={theme}
-      options={THEMES.map((value) => ({ value, label: t(`sidebar.${value}`) }))}
-      onChange={(next) => {
-        applyTheme(next)
-        setTheme(next)
-      }}
-    />
   )
 }

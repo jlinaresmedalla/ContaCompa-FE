@@ -12,7 +12,12 @@ export function DailyChart({ days }: { days: CostReport['by_day'] }) {
         {days.map((day) => (
           <div
             key={day.day}
-            title={`${day.day}: ${day.docs} · ${day.input_tokens + day.output_tokens} tokens · $${Number(day.list_usd).toFixed(4)}`}
+            title={t('costs.daySummary', {
+              date: day.day,
+              docs: day.docs,
+              tokens: day.input_tokens + day.output_tokens,
+              cost: '$' + Number(day.list_usd).toFixed(4),
+            })}
             className="flex-1 rounded-t bg-primary hover:opacity-80"
             style={{ height: `${(day.docs / max) * 100}%`, minHeight: day.docs ? 4 : 1 }}
           />

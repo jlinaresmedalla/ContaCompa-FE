@@ -29,11 +29,13 @@ export function LinePrices({ doc }: { doc: PurchaseDocSummary }) {
         </Badge>
         <span>{t('prices.legend')}</span>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="max-w-full min-w-0 overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead className="bg-muted text-xs text-muted-foreground">
             <tr>
-              <th className="px-2 py-1.5 text-left font-semibold">#</th>
+              <th className="sticky left-0 z-10 border-r border-border bg-muted px-2 py-1.5 text-left font-semibold">
+                #
+              </th>
               <th className="px-2 py-1.5 text-left font-semibold">
                 {t('detail.fields.description')}
               </th>
@@ -48,7 +50,9 @@ export function LinePrices({ doc }: { doc: PurchaseDocSummary }) {
           <tbody>
             {doc.lines.map((line) => (
               <tr key={line.id} className="border-t border-border">
-                <td className="px-2 py-1.5 text-muted-foreground">{line.line_number}</td>
+                <td className="sticky left-0 z-10 border-r border-border bg-card px-2 py-1.5 text-muted-foreground">
+                  {line.line_number}
+                </td>
                 <td className="px-2 py-1.5">{line.description ?? '—'}</td>
                 <td className={cell}>{number(line.quantity)}</td>
                 <td className="px-2 py-1.5">{line.unit}</td>

@@ -97,7 +97,7 @@ test('a valid key lands on purchase docs and shows the company', async () => {
 test('an invalid key shows the error and stores nothing', async () => {
   const { router } = renderAt('/sign-in')
   signIn('bad')
-  expect(await screen.findByRole('alert')).toHaveTextContent('missing, wrong or expired')
+  expect(await screen.findByRole('alert')).toHaveTextContent('missing, invalid or expired')
   expect(apiKeyStore.get()).toBeNull()
   expect(router.state.location.pathname).toBe('/sign-in')
 })
