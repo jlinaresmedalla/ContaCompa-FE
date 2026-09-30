@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/components/atoms'
 
 export function FilePreviewSkeleton() {
   const { t } = useTranslation()

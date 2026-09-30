@@ -2,6 +2,19 @@ import type { Messages } from '../en'
 
 export const ES_JOBS: Pick<Messages, 'jobs' | 'jobStatus' | 'jobStatusHint'> = {
   jobs: {
+    search: 'Buscar archivo o serie y número',
+    all: 'Todos',
+    filter: 'Archivos con observaciones o errores',
+    sort: 'Más antiguos primero',
+    filteredTitle: 'No hay archivos que coincidan',
+    filteredDescription: 'Prueba otra búsqueda o limpia los filtros.',
+    clear: 'Limpiar filtros',
+    inProgress: 'En curso',
+    viewJob: 'Ver procesamiento',
+    attempts: '{{count}} intentos',
+    details: 'Detalle del procesamiento',
+    progressHint: 'El estado se actualiza automáticamente.',
+
     paused:
       'Extracción en pausa: el proveedor del modelo no está disponible.{{next}} La espera no consume intentos de procesamiento.',
     pausedNext: ' Próximo intento: {{time}} (hora local).',
@@ -11,7 +24,7 @@ export const ES_JOBS: Pick<Messages, 'jobs' | 'jobStatus' | 'jobStatusHint'> = {
     choose: 'Elegir archivos',
     uploading: 'Subiendo…',
     chooseLabel: 'Elegir archivos para subir',
-    latest: 'Procesamientos recientes',
+    latest: 'Archivos recientes',
     refreshing: 'Se actualiza cada 2 segundos · {{count}} en curso',
     idle: 'Sin procesamientos en curso',
     empty: 'Aún no hay archivos subidos.',

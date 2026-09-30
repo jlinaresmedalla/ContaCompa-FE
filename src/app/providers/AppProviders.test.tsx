@@ -5,6 +5,9 @@ import { AppProviders } from './AppProviders'
 
 vi.mock('@/features/home/HomePage', () => ({ HomePage: () => <p>Home route</p> }))
 vi.mock('@/features/design/DesignPage', () => ({ DesignPage: () => <p>Design route</p> }))
+vi.mock('@/features/session/SessionLayout', () => {
+  throw new Error('Public navigation must not load the session runtime')
+})
 vi.mock('@/lib/http', () => {
   throw new Error('Public navigation must not load the HTTP client')
 })

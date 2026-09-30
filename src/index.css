@@ -79,43 +79,43 @@
   --gray-950: #000000;
   --glass-light: rgb(255 255 255 / 0.72);
   --glass-dark: rgb(28 28 30 / 0.7);
-  --glass-blur: 20px;
+  --glass-blur: 1.375rem;
   --glass-saturate: 180%;
   --hairline-light: rgb(0 0 0 / 0.08);
   --hairline-dark: rgb(255 255 255 / 0.1);
-  --radius-8: 8px;
-  --radius-10: 10px;
-  --radius-12: 12px;
-  --radius-18: 18px;
-  --radius-24: 24px;
+  --radius-8: 0.625rem;
+  --radius-10: 0.75rem;
+  --radius-12: 0.875rem;
+  --radius-18: 1.25rem;
+  --radius-24: 1.75rem;
   --radius-pill: 980px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
   --font-family-inter: 'Inter Variable', -apple-system, system-ui, sans-serif;
-  --type-caption: 12px;
-  --type-footnote: 13px;
-  --type-body: 15px;
-  --type-headline: 17px;
-  --type-title-3: 21px;
-  --type-title-2: 28px;
-  --type-large-title: 32px;
-  --type-display: 48px;
-  --type-hero: 80px;
+  --type-caption: 0.875rem;
+  --type-footnote: 0.875rem;
+  --type-body: 1rem;
+  --type-headline: 1.25rem;
+  --type-title-3: 1.5rem;
+  --type-title-2: 2rem;
+  --type-large-title: 2.25rem;
+  --type-display: 3.5rem;
+  --type-hero: 5.75rem;
   --tracking-body: -0.011em;
   --tracking-title: -0.025em;
   --tracking-display: -0.035em;
-  --shadow-light-1: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-light-2: 0 1px 2px rgb(0 0 0 / 0.04), 0 12px 40px rgb(0 0 0 / 0.08);
-  --shadow-dark-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-dark-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 40px rgb(0 0 0 / 0.5);
+  --shadow-light-1: 0 0.125rem 0.125rem rgb(0 0 0 / 0.04);
+  --shadow-light-2: 0 0.125rem 0.125rem rgb(0 0 0 / 0.04), 0 0.875rem 2.875rem rgb(0 0 0 / 0.08);
+  --shadow-dark-1: 0 0.125rem 0.125rem rgb(0 0 0 / 0.4);
+  --shadow-dark-2: 0 0.125rem 0.125rem rgb(0 0 0 / 0.4), 0 0.875rem 2.875rem rgb(0 0 0 / 0.5);
   --duration-fast: 120ms;
   --duration-base: 160ms;
   --duration-slow: 200ms;
@@ -124,6 +124,37 @@
 
 /* Semantic tokens: theme differences live only here. */
 :root {
+  --sidebar-width: 17.125rem;
+  --sidebar-rail-width: 4rem;
+  --shell-header-height: 4.625rem;
+  --shell-mobile-header-height: 4rem;
+  --navigation-height: 2.875rem;
+  --shell-content-top: 1.75rem;
+  --shell-content-sides: 2.25rem;
+  --shell-content-phone: 1.125rem;
+  --shell-content-width: 91.5rem;
+  --account-menu-width: 19.375rem;
+  --control-height: 2.625rem;
+  --control-compact-height: 2.25rem;
+  --control-touch-height: 3.25rem;
+  --control-current-height: var(--control-height);
+  --chip-height: 1.75rem;
+  --avatar-size: 2.25rem;
+  --avatar-dense-size: 1.75rem;
+  --icon-tile-size: 2.625rem;
+  --icon-button-size: 2.25rem;
+  --icon-button-row-size: 2rem;
+  --stat-card-height: 5.75rem;
+  --list-row-height: 4.875rem;
+  --table-header-height: 3.125rem;
+  --table-row-height: 3.75rem;
+  --card-padding: 1.375rem;
+  --card-radius: 0.875rem;
+  --control-radius: 0.75rem;
+  --navigation-radius: 0.75rem;
+  --icon-tile-radius: 0.625rem;
+  --focus-width: 0.125rem;
+  --focus-offset: 0.125rem;
   --background: var(--gray-50);
   --backdrop-primary: var(--terracotta-100);
   --backdrop-amber: var(--amber-100);
@@ -150,7 +181,7 @@
   --ring: var(--terracotta-500);
   --material: var(--glass-light);
   --hairline: var(--hairline-light);
-  --shadow-soft: var(--shadow-light-1);
+  --shadow-soft: none;
   --shadow-raised: var(--shadow-light-2);
 }
 
@@ -181,7 +212,7 @@
   --ring: var(--terracotta-400);
   --material: var(--glass-dark);
   --hairline: var(--hairline-dark);
-  --shadow-soft: var(--shadow-dark-1);
+  --shadow-soft: none;
   --shadow-raised: var(--shadow-dark-2);
   color-scheme: dark;
 }
@@ -214,13 +245,45 @@
     --ring: var(--terracotta-400);
     --material: var(--glass-dark);
     --hairline: var(--hairline-dark);
-    --shadow-soft: var(--shadow-dark-1);
+    --shadow-soft: none;
     --shadow-raised: var(--shadow-dark-2);
     color-scheme: dark;
   }
 }
 
 @theme inline {
+  --breakpoint-md: 48rem; /* TABLET_WIDTH_PX: 768, viewport breakpoint stays in px below. */
+  --breakpoint-lg: 64rem; /* DESKTOP_WIDTH_PX: 1024. */
+  --text-xs: var(--type-caption);
+  --text-sm: var(--type-footnote);
+  --text-base: var(--type-body);
+  --spacing-sidebar: var(--sidebar-width);
+  --spacing-sidebar-rail: var(--sidebar-rail-width);
+  --spacing-shell-header: var(--shell-header-height);
+  --spacing-shell-mobile-header: var(--shell-mobile-header-height);
+  --spacing-navigation: var(--navigation-height);
+  --spacing-shell-top: var(--shell-content-top);
+  --spacing-shell-sides: var(--shell-content-sides);
+  --spacing-shell-phone: var(--shell-content-phone);
+  --spacing-shell-content: var(--shell-content-width);
+  --spacing-account-menu: var(--account-menu-width);
+  --spacing-control: var(--control-current-height);
+  --spacing-control-compact: var(--control-compact-height);
+  --spacing-chip: var(--chip-height);
+  --spacing-avatar: var(--avatar-size);
+  --spacing-avatar-dense: var(--avatar-dense-size);
+  --spacing-icon-tile: var(--icon-tile-size);
+  --spacing-icon-button: var(--icon-button-size);
+  --spacing-icon-button-row: var(--icon-button-row-size);
+  --spacing-stat-card: var(--stat-card-height);
+  --spacing-list-row: var(--list-row-height);
+  --spacing-table-header: var(--table-header-height);
+  --spacing-table-row: var(--table-row-height);
+  --spacing-card: var(--card-padding);
+  --radius-card: var(--card-radius);
+  --radius-control: var(--control-radius);
+  --radius-navigation: var(--navigation-radius);
+  --radius-icon-tile: var(--icon-tile-radius);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -251,6 +314,7 @@
   --radius-full: var(--radius-pill);
   --shadow-sm: var(--shadow-soft);
   --shadow-md: var(--shadow-raised);
+  --shadow-lg: var(--shadow-raised);
   --font-sans: var(--font-family-inter);
   --default-transition-duration: var(--duration-base);
   --default-transition-timing-function: var(--ease-standard);
@@ -280,7 +344,23 @@
   }
 }
 
+/* Phone controls scale from the same semantic token, including lazy placeholders. */
+@media (width < 768px) {
+  :root {
+    --control-current-height: var(--control-touch-height);
+  }
+}
+
 @layer base {
+  html {
+    font-size: 14px;
+  }
+
+  :where(button, input, select, textarea, a, [tabindex]):focus-visible {
+    outline: var(--focus-width) solid var(--ring) !important;
+    outline-offset: var(--focus-offset) !important;
+    box-shadow: none !important;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-family-inter);
@@ -348,8 +428,8 @@
 [data-sonner-toaster] [data-close-button]:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--background),
-    0 0 0 4px var(--ring) !important;
+    0 0 0 var(--focus-offset) var(--background),
+    0 0 0 calc(var(--focus-width) + var(--focus-offset)) var(--ring) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -372,4 +452,9 @@
   background:
     radial-gradient(ellipse at 5% 15%, var(--backdrop-primary), transparent 60%),
     radial-gradient(ellipse at 95% 85%, var(--backdrop-amber), transparent 60%), var(--background);
+}
+
+@utility select-focus {
+  outline: var(--focus-width) solid var(--ring);
+  outline-offset: var(--focus-offset);
 }

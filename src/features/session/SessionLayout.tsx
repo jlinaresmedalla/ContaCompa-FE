@@ -1,7 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { Outlet } from 'react-router'
 
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/organisms'
 
 import { useSessionRuntime } from './use-session-runtime'
 

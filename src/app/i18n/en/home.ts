@@ -24,6 +24,12 @@ export const EN_HOME = {
       },
       export: { title: 'Export', description: 'One click gives your accountant an Excel file.' },
     },
+    overview: {
+      interface: { title: 'React interface', description: 'Upload, review, export' },
+      service: { title: 'FastAPI service', description: 'Typed API, one transaction' },
+      queue: { title: 'Postgres job queue', description: 'Long work runs off the request' },
+      extraction: { title: 'Gemini extraction', description: 'Strict schema, measured cost' },
+    },
     architecture: 'Architecture and stack',
     architectureIntro:
       'A React interface, a FastAPI service and a Postgres job queue connect uploads to Gemini extraction.',

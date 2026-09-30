@@ -2,9 +2,8 @@ import { Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { Badge, type BadgeTone } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardTitle } from '@/components/ui/card'
+import { Badge, type BadgeTone, Button, Card } from '@/components/atoms'
+
 import { cn } from '@/lib/cn'
 
 import { useUploadFiles } from '../hooks'
@@ -29,8 +28,7 @@ export function UploadDropzone() {
   }
 
   return (
-    <Card>
-      <CardTitle hint={t('jobs.uploadHint')}>{t('jobs.upload')}</CardTitle>
+    <Card className="border-dashed p-4.5 md:px-5.5">
       <div
         onDragOver={(event) => {
           event.preventDefault()
@@ -43,12 +41,22 @@ export function UploadDropzone() {
           send(event.dataTransfer.files)
         }}
         className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-sm',
-          dragging ? 'border-primary bg-primary/10' : 'border-border',
+          'flex flex-col gap-3.5 rounded-control text-sm md:flex-row md:items-center md:gap-4.5',
+          dragging ? 'bg-primary/10' : '',
         )}
       >
-        <span className="text-muted-foreground">{t('jobs.drop')}</span>
-        <Button disabled={isUploading} onClick={() => inputRef.current?.click()}>
+        <div className="flex min-w-0 flex-1 items-center gap-3.5">
+          <span className="flex size-icon-tile shrink-0 items-center justify-center rounded-icon-tile border border-primary/20 bg-primary/10 text-primary">
+            <Upload aria-hidden="true" className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-semibold">{t('jobs.upload')}</h2>
+            <p className="text-xs text-muted-foreground">
+              {t('jobs.drop')} {t('jobs.uploadHint')}
+            </p>
+          </div>
+        </div>
+        <Button variant="outline" disabled={isUploading} onClick={() => inputRef.current?.click()}>
           <Upload aria-hidden="true" className="size-4" />
           {isUploading ? t('jobs.uploading') : t('jobs.choose')}
         </Button>

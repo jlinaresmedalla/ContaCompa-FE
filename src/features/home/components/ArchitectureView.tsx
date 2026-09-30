@@ -1,16 +1,18 @@
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/atoms'
 import { ARCHITECTURE } from '../architecture-data'
 import { boundaryBox, connectionLine, GEOMETRY } from '../architecture-layout'
 import { useArchitecture } from '../use-architecture'
+import { ArchitectureSummary } from './ArchitectureSummary'
 
 export function ArchitectureView() {
   const { t } = useTranslation()
   const { flow, setFlow, node, setNode, isActive } = useArchitecture()
   const id = useId()
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 lg:p-3.5">
+      <ArchitectureSummary />
       <div role="group" aria-label={t('home.diagram.flowsLabel')} className="flex flex-wrap gap-2">
         {(['overview', ...ARCHITECTURE.meta.views.map((view) => view.id)] as const).map((value) => (
           <Button

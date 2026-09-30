@@ -1,0 +1,26 @@
+import { cn } from '@/lib/cn'
+
+import { LogoMark } from '@/components/atoms'
+
+interface LogoProps {
+  className?: string
+  title?: string
+  size?: 'sm' | 'md' | 'lg'
+}
+
+const SIZES = {
+  sm: { mark: 'size-4', wordmark: 'text-sm' },
+  md: { mark: 'size-8', wordmark: 'text-[length:var(--type-headline)]' },
+  lg: { mark: 'size-12', wordmark: 'text-2xl' },
+}
+
+export function Logo({ className, title, size = 'md' }: LogoProps) {
+  return (
+    <span className={cn('inline-flex items-center gap-2', className)}>
+      <LogoMark className={cn('text-primary', SIZES[size].mark)} title={title} />
+      <span className={cn('font-semibold tracking-tight text-foreground', SIZES[size].wordmark)}>
+        Contacompa
+      </span>
+    </span>
+  )
+}

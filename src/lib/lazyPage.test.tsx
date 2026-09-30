@@ -4,9 +4,9 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
-import { AppLayout } from '@/components/layout/AppLayout'
-import { PublicLayout } from '@/components/layout/PublicLayout'
-import { PageSkeleton } from '@/components/loading/PageSkeleton'
+import { AppLayout } from '@/components/templates'
+import { PublicLayout } from '@/components/templates'
+import { PageSkeleton } from '@/components/molecules/PageSkeleton'
 import { FilePreviewSkeleton } from '@/features/documents/components/FilePreviewSkeleton'
 import { API_KEY_STORE } from '@/lib/api-key'
 
@@ -14,11 +14,19 @@ import { lazyPage } from './lazyPage'
 
 vi.mock('@/features/session/SessionPanel', () => ({ SessionPanel: () => null }))
 
+function PrivateShell() {
+  return (
+    <AppLayout
+      account={{ company: 'Example', initials: 'EX', timeLeft: null, signOut: () => {} }}
+    />
+  )
+}
+
 afterEach(cleanup)
 
 test.each([
   [PublicLayout, 'banner'],
-  [AppLayout, 'complementary'],
+  [PrivateShell, 'complementary'],
 ] as const)('a lazy route keeps its %s shell while loading (%s)', async (Layout, shellRole) => {
   await i18n.changeLanguage('en')
   API_KEY_STORE.clear()

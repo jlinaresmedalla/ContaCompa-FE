@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { TABLET_WIDTH_PX } from '@/lib/breakpoints'
-import { useSidebarState } from '@/components/ui/use-sidebar'
+import { useSidebarState } from '@/components/organisms'
 import { useDetailTabs } from './use-detail-tabs'
 
 test.each([TABLET_WIDTH_PX - 1, TABLET_WIDTH_PX])(

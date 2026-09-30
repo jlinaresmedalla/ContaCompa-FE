@@ -1,5 +1,18 @@
 export const EN_JOBS = {
   jobs: {
+    search: 'Search file or document number',
+    all: 'All',
+    filter: 'Files with observations or errors',
+    sort: 'Oldest first',
+    filteredTitle: 'No matching files',
+    filteredDescription: 'Try another search or clear the filters.',
+    clear: 'Clear filters',
+    inProgress: 'In progress',
+    viewJob: 'View job',
+    attempts: '{{count}} attempts',
+    details: 'Job details',
+    progressHint: 'Processing updates automatically.',
+
     paused:
       'Extraction paused: the model provider is unavailable.{{next}} Waiting does not use up job attempts.',
     pausedNext: ' Next attempt at {{time}} (local time).',
@@ -9,7 +22,7 @@ export const EN_JOBS = {
     choose: 'Choose files',
     uploading: 'Uploading…',
     chooseLabel: 'Choose files to upload',
-    latest: 'Recent jobs',
+    latest: 'Recent files',
     refreshing: 'Updates every 2 seconds · {{count}} active',
     idle: 'No active jobs',
     empty: 'No uploads yet.',

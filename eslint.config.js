@@ -6,6 +6,49 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
+// Spec 006 (ADR 0028 / 0030): each level imports only lower levels, never features,
+// never the legacy shared roots and never its own barrel (same-level files use paths).
+const COMPONENT_LEVELS = ['atoms', 'molecules', 'organisms', 'templates']
+const LEGACY_COMPONENT_ROOTS = ['ui', 'layout', 'brand', 'loading']
+
+function levelImportRule(level, files, blockSiblings) {
+  const upper = COMPONENT_LEVELS.slice(COMPONENT_LEVELS.indexOf(level) + 1)
+  return {
+    files,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/features',
+                '@/features/**',
+                '**/features/**',
+                `@/components/${level}`,
+                ...upper.flatMap((restricted) => [
+                  `@/components/${restricted}`,
+                  `@/components/${restricted}/**`,
+                  `**/${restricted}`,
+                  `**/${restricted}/**`,
+                ]),
+                ...(blockSiblings ? ['./*', '../*'] : []),
+                ...LEGACY_COMPONENT_ROOTS.flatMap((legacy) => [
+                  `@/components/${legacy}`,
+                  `@/components/${legacy}/**`,
+                  `**/${legacy}/**`,
+                ]),
+              ],
+              message:
+                'Shared components import only lower levels (through their barrel) and never features; same-level files import by path, atoms import no project component. Use lib for non-component utilities.',
+            },
+          ],
+        },
+      ],
+    },
+  }
+}
+
 // The upstream rule does not recognize numeric members of `as const` dictionaries.
 // Preserve its checks and add the explicit ADR 0026 exception only for literal members.
 const NO_MAGIC_NUMBERS = tseslint.plugin.rules['no-magic-numbers']
@@ -83,5 +126,34 @@ export default tseslint.config(
       parserOptions: { project: ['./tsconfig.app.json'], tsconfigRootDir: import.meta.dirname },
     },
   },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: LEGACY_COMPONENT_ROOTS.flatMap((legacy) => [
+            `@/components/${legacy}`,
+            `@/components/${legacy}/**`,
+            `**/components/${legacy}`,
+            `**/components/${legacy}/**`,
+          ]),
+        },
+      ],
+    },
+  },
+  ...COMPONENT_LEVELS.flatMap((level) => [
+    levelImportRule(level, [`src/components/${level}/**/*.{ts,tsx}`], level === 'atoms'),
+    // The barrel re-exports its atoms and a test imports the atom beside it.
+    ...(level === 'atoms'
+      ? [
+          levelImportRule(
+            level,
+            ['src/components/atoms/index.ts', 'src/components/atoms/**/*.test.{ts,tsx}'],
+            false,
+          ),
+        ]
+      : []),
+  ]),
   prettier,
 )

@@ -4,7 +4,8 @@ import type { CostReport } from '../types'
 
 const COST_DIGITS = 4
 const PERCENT_SCALE = 100
-const MIN_BAR_HEIGHT_PX = 4
+const MIN_BAR_HEIGHT_REM = '0.25rem'
+const EMPTY_BAR_HEIGHT_REM = '0.125rem'
 
 /** Purchase docs per day as bars; the tooltip carries tokens and list cost. */
 export function DailyChart({ days }: { days: CostReport['by_day'] }) {
@@ -12,7 +13,11 @@ export function DailyChart({ days }: { days: CostReport['by_day'] }) {
   const max = Math.max(1, ...days.map((day) => day.docs))
   return (
     <div>
-      <div className="flex h-40 items-end gap-1" role="img" aria-label={t('costs.chartLabel')}>
+      <div
+        className="flex h-40 items-end gap-1 border-b border-border lg:h-[11.375rem] lg:gap-1.5"
+        role="img"
+        aria-label={t('costs.chartLabel')}
+      >
         {days.map((day) => (
           <div
             key={day.day}
@@ -25,7 +30,7 @@ export function DailyChart({ days }: { days: CostReport['by_day'] }) {
             className="flex-1 rounded-t bg-primary hover:opacity-80"
             style={{
               height: `${(day.docs / max) * PERCENT_SCALE}%`,
-              minHeight: day.docs ? MIN_BAR_HEIGHT_PX : 1,
+              minHeight: day.docs ? MIN_BAR_HEIGHT_REM : EMPTY_BAR_HEIGHT_REM,
             }}
           />
         ))}

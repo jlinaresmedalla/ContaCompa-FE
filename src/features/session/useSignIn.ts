@@ -14,6 +14,7 @@ export function useSignIn() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [value, setValue] = useState('')
+  const [showKey, setShowKey] = useState(false)
   const signIn = useMutation({
     // The key is stored only after the service accepts it.
     mutationFn: async (key: string) => {
@@ -33,6 +34,8 @@ export function useSignIn() {
   }
 
   return {
+    showKey,
+    toggleKey: () => setShowKey((shown) => !shown),
     value,
     setValue,
     submit,

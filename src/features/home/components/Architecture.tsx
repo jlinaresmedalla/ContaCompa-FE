@@ -1,9 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
-import { Card } from '@/components/ui/card'
+import { Badge, Card, Skeleton } from '@/components/atoms'
 
-import { Skeleton } from '@/components/ui/skeleton'
 import { lazyPage } from '@/lib/lazyPage'
 
 const ArchitectureView = lazyPage<object>(
@@ -17,13 +15,16 @@ export function Architecture() {
     <section
       id="architecture"
       aria-labelledby="architecture-title"
-      className="min-w-0 scroll-mt-40"
+      className="min-w-0 scroll-mt-20 md:mt-[3.375rem]"
     >
-      <h2 id="architecture-title" className="text-4xl font-semibold tracking-tight">
+      <h2
+        id="architecture-title"
+        className="text-2xl leading-8 md:text-[1.75rem] md:leading-9 font-semibold tracking-tight"
+      >
         {t('home.architecture')}
       </h2>
-      <p className="mt-3 text-muted-foreground">{t('home.architectureIntro')}</p>
-      <Card className="mt-6 min-w-0 overflow-hidden">
+      <p className="mt-1 text-muted-foreground">{t('home.architectureIntro')}</p>
+      <Card className="mt-[1.125rem] md:mt-[1.375rem] min-w-0 overflow-hidden">
         <ArchitectureView />
       </Card>
       <ul aria-label={t('home.stackLabel')} className="mt-4 flex flex-wrap gap-2">

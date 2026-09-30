@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Navigate, Outlet, useLocation } from 'react-router'
 
-import { Button } from '@/components/ui/button'
-import { ErrorNote } from '@/components/ui/input'
+import { Button } from '@/components/atoms'
+import { ErrorNote } from '@/components/molecules'
 import { API_KEY_STORE } from '@/lib/api-key'
 import { toApiError } from '@/lib/http'
 

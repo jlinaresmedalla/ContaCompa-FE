@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@/components/atoms'
 
 import { observationLabel } from '../observations'
 import type { Issue } from '../types'

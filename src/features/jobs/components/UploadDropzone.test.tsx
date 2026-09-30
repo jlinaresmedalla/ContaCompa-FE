@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/organisms'
 
 import { JOBS_API } from '../api'
 import { UploadDropzone } from './UploadDropzone'

@@ -1,103 +1,109 @@
-import { Upload, RotateCcw } from 'lucide-react'
-import type { ColumnDef } from '@tanstack/react-table'
-import type { TFunction } from 'i18next'
-import { useMemo } from 'react'
+import {
+  ChevronRight,
+  FileText,
+  Image,
+  ListFilter,
+  RotateCcw,
+  ArrowDownWideNarrow,
+  Upload,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '@/app/router/paths'
-import { Badge, type BadgeTone } from '@/components/ui/badge'
-import { IconButton } from '@/components/ui/icon-button'
-import { EmptyState } from '@/components/ui/empty-state'
-import { DataTable } from '@/components/ui/data-table'
+import { Badge, Button, Card, Input, Skeleton, type BadgeTone } from '@/components/atoms'
+import { AppSelect, EmptyState, IconButton } from '@/components/molecules'
 import { dateTime, seconds } from '@/lib/format'
-
-import { useRetryJob } from '../hooks'
+import { useJobsList, useRetryJob } from '../hooks'
 import type { JobRow, JobStatus } from '../types'
 
 const STATUS_TONE: Record<JobStatus, BadgeTone> = {
-  queued: 'neutral',
+  queued: 'warning',
   processing: 'info',
   done: 'success',
   failed: 'warning',
   dead: 'danger',
 }
+const FILTER_STATUSES = ['all', 'done', 'processing', 'dead', 'queued', 'failed'] as const
+const SKELETON_ROWS = 3
+const ROW_CLASS =
+  'flex min-h-list-row items-center gap-3.5 border-b border-border px-4.5 py-3 last:border-b-0 md:h-list-row md:gap-4.5 md:px-5.5'
 
 function RetryButton({ jobId }: { jobId: string }) {
   const { t } = useTranslation()
   const retry = useRetryJob()
   return (
-    <IconButton
-      icon={RotateCcw}
-      label={t('common.retry')}
+    <Button
       variant="outline"
+      className="px-3 md:size-icon-button-row md:p-0"
+      aria-label={t('common.retry')}
       disabled={retry.isPending}
       onClick={() => retry.mutate(jobId)}
-    />
+    >
+      <RotateCcw aria-hidden="true" className="hidden size-4 md:block" />
+      <span className="md:hidden">{t('common.retry')}</span>
+    </Button>
   )
 }
 
-function buildColumns(t: TFunction, locale: string): ColumnDef<JobRow, unknown>[] {
-  return [
-    {
-      header: t('jobs.columns.file'),
-      cell: ({ row }) => <span className="font-medium">{row.original.filename}</span>,
-    },
-    {
-      header: t('jobs.columns.kind'),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{t(`sourceKind.${row.original.source_kind}`)}</span>
-      ),
-    },
-    {
-      header: t('jobs.columns.status'),
-      cell: ({ row }) => (
-        <div className="flex flex-col gap-1">
-          <Badge tone={STATUS_TONE[row.original.status]}>
-            {t(`jobStatus.${row.original.status}`)}
-          </Badge>
-          {row.original.last_error ? (
-            <span className="max-w-64 text-xs text-destructive">{row.original.last_error}</span>
-          ) : null}
+function JobListRow({ job }: { job: JobRow }) {
+  const { t, i18n } = useTranslation()
+  const Icon = job.source_kind === 'photo' ? Image : FileText
+  return (
+    <li id={`job-${job.job_id}`} className={ROW_CLASS}>
+      <span className="flex size-icon-tile shrink-0 items-center justify-center rounded-icon-tile border border-primary/20 bg-primary/10 text-primary">
+        <Icon aria-hidden="true" className="size-4.5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate font-semibold" title={job.filename}>
+          {job.filename}
         </div>
-      ),
-    },
-    { header: t('jobs.columns.attempts'), cell: ({ row }) => row.original.attempts },
-    {
-      header: t('jobs.columns.uploaded'),
-      cell: ({ row }) => dateTime(row.original.created_at, locale),
-    },
-    {
-      header: t('jobs.columns.took'),
-      cell: ({ row }) => seconds(row.original.created_at, row.original.finished_at),
-    },
-    {
-      header: t('jobs.columns.document'),
-      cell: ({ row }) => {
-        const { purchase_doc_id: id, doc_number, observations, warnings } = row.original
-        if (!id) return <span className="text-muted-foreground">—</span>
-        return (
-          <Link
-            to={PATHS.purchaseDoc(id)}
-            className="flex items-center gap-2 hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
-          >
-            <span className="font-medium text-primary">{doc_number ?? t('common.open')}</span>
-            <Badge tone={observations === 0 ? 'success' : warnings ? 'warning' : 'info'}>
-              {observations === 0
-                ? t('common.clean')
-                : t('jobs.observations', { count: observations })}
-            </Badge>
-          </Link>
-        )
-      },
-    },
-    {
-      id: 'actions',
-      header: '',
-      cell: ({ row }) =>
-        row.original.status === 'dead' ? <RetryButton jobId={row.original.job_id} /> : null,
-    },
-  ]
+        <div className="truncate text-xs text-muted-foreground" title={job.last_error ?? undefined}>
+          {job.last_error ??
+            `${t(`sourceKind.${job.source_kind}`)} · ${job.doc_number ?? t(`jobStatusHint.${job.status}`)}`}
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-2.5 md:hidden">
+          <Badge tone={STATUS_TONE[job.status]}>{t(`jobStatus.${job.status}`)}</Badge>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {job.status === 'dead'
+              ? t('jobs.attempts', { count: job.attempts })
+              : seconds(job.created_at, job.finished_at)}
+          </span>
+        </div>
+      </div>
+      <div className="hidden w-27.5 shrink-0 md:block">
+        <Badge tone={STATUS_TONE[job.status]}>{t(`jobStatus.${job.status}`)}</Badge>
+      </div>
+      <div
+        className="hidden w-20.5 shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
+        aria-label={t('jobs.columns.took')}
+      >
+        {seconds(job.created_at, job.finished_at)}
+      </div>
+      <div
+        className="hidden w-32 shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
+        aria-label={t('jobs.columns.attempts')}
+      >
+        {t('jobs.attempts', { count: job.attempts })}
+      </div>
+      <div className="flex shrink-0 justify-end md:w-20.5">
+        {job.status === 'dead' ? (
+          <RetryButton jobId={job.job_id} />
+        ) : job.purchase_doc_id ? (
+          <IconButton size="row" icon={ChevronRight} label={t('jobs.columns.document')} asChild>
+            <Link to={PATHS.purchaseDoc(job.purchase_doc_id)} />
+          </IconButton>
+        ) : null}
+        {!job.purchase_doc_id && job.status !== 'dead' ? (
+          <span className="text-muted-foreground">—</span>
+        ) : null}
+      </div>
+      <span className="sr-only">
+        {dateTime(job.created_at, i18n.language)}
+        {job.observations > 0 ? ` · ${t('jobs.observations', { count: job.observations })}` : ''}
+      </span>
+    </li>
+  )
 }
 
 export function JobsTable({
@@ -111,23 +117,111 @@ export function JobsTable({
   isLoading: boolean
   error: string | null
 }) {
-  const { t, i18n } = useTranslation()
-  const columns = useMemo(() => buildColumns(t, i18n.language), [t, i18n.language])
+  const { t } = useTranslation()
+  const list = useJobsList(jobs)
+  const options = FILTER_STATUSES.map((value) => ({
+    value,
+    label: value === 'all' ? t('jobs.all') : t(`jobStatus.${value}`),
+  }))
   return (
-    <DataTable
-      columns={columns}
-      data={jobs}
-      isLoading={isLoading}
-      error={error}
-      empty={
-        <EmptyState
-          icon={Upload}
-          title={t('pageStates.jobsTitle')}
-          description={t('pageStates.jobsDescription')}
-          action={<IconButton icon={Upload} label={t('pageStates.upload')} onClick={onUpload} />}
-        />
-      }
-      getRowId={(row) => row.job_id}
-    />
+    <div className="space-y-4.5">
+      <div className="flex flex-col gap-3.5">
+        <div className="md:hidden">
+          <AppSelect
+            label={t('jobs.columns.status')}
+            value={list.status}
+            options={options}
+            onChange={list.setStatus}
+          />
+        </div>
+        <div
+          className="hidden flex-wrap gap-2.5 md:flex"
+          role="group"
+          aria-label={t('jobs.columns.status')}
+        >
+          {options.map((option) => (
+            <Button
+              key={option.value}
+              variant="outline"
+              aria-pressed={list.status === option.value}
+              className={list.status === option.value ? 'border-primary text-primary' : ''}
+              onClick={() => list.setStatus(option.value)}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          <Input
+            type="search"
+            className="min-w-0 flex-1 rounded-full"
+            aria-label={t('jobs.search')}
+            placeholder={t('jobs.search')}
+            value={list.search}
+            onChange={(event) => list.setSearch(event.target.value)}
+          />
+          <Button
+            variant="outline"
+            aria-label={t('jobs.filter')}
+            aria-pressed={list.issuesOnly}
+            onClick={() => list.setIssuesOnly(!list.issuesOnly)}
+          >
+            <ListFilter aria-hidden="true" className="size-4" />
+          </Button>
+          <Button
+            variant="outline"
+            aria-label={t('jobs.sort')}
+            aria-pressed={list.oldestFirst}
+            onClick={() => list.setOldestFirst(!list.oldestFirst)}
+          >
+            <ArrowDownWideNarrow aria-hidden="true" className="size-4" />
+          </Button>
+        </div>
+      </div>
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
+      <Card className="overflow-hidden p-0" aria-busy={isLoading && !jobs}>
+        {isLoading && !jobs ? (
+          <ul aria-label={t('jobs.latest')}>
+            {Array.from({ length: SKELETON_ROWS }, (_, index) => (
+              <li key={index} className={ROW_CLASS}>
+                <Skeleton className="size-icon-tile shrink-0" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+                <Skeleton className="h-chip w-20" />
+              </li>
+            ))}
+          </ul>
+        ) : list.rows.length > 0 ? (
+          <ul aria-label={t('jobs.latest')}>
+            {list.rows.map((job) => (
+              <JobListRow key={job.job_id} job={job} />
+            ))}
+          </ul>
+        ) : error && !jobs ? null : (
+          <EmptyState
+            icon={Upload}
+            title={t(jobs?.length ? 'jobs.filteredTitle' : 'pageStates.jobsTitle')}
+            description={t(
+              jobs?.length ? 'jobs.filteredDescription' : 'pageStates.jobsDescription',
+            )}
+            action={
+              jobs?.length ? (
+                <Button variant="outline" onClick={list.clearFilters}>
+                  {t('jobs.clear')}
+                </Button>
+              ) : (
+                <Button onClick={onUpload}>{t('pageStates.upload')}</Button>
+              )
+            }
+          />
+        )}
+      </Card>
+    </div>
   )
 }

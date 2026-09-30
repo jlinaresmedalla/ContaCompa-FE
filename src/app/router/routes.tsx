@@ -2,8 +2,8 @@ import { Navigate, type RouteObject } from 'react-router'
 
 import { VISIBLE_MODULES } from '@/app/modules'
 import { PATHS } from '@/app/router/paths'
-import { PublicLayout } from '@/components/layout/PublicLayout'
-import { PageSkeleton } from '@/components/loading/PageSkeleton'
+import { PublicLayout } from '@/components/templates'
+import { PageSkeleton } from '@/components/molecules/PageSkeleton'
 import { lazyPage } from '@/lib/lazyPage'
 import { API_KEY_STORE } from '@/lib/api-key'
 
@@ -14,10 +14,10 @@ const SessionLayout = lazyPage<object>(
   },
   <PageSkeleton />,
 )
-const AppLayout = lazyPage<object>(
+const PrivateLayout = lazyPage<object>(
   async () => {
-    const module = await import('@/components/layout/AppLayout')
-    return { default: module.AppLayout }
+    const module = await import('@/features/session/PrivateLayout')
+    return { default: module.PrivateLayout }
   },
   <PageSkeleton />,
 )
@@ -100,7 +100,7 @@ export const ROUTES: RouteObject[] = [
         element: <PrivateRoute />,
         children: [
           {
-            element: <AppLayout />,
+            element: <PrivateLayout />,
             children: [
               // A bare module prefix opens the module's first page.
               ...VISIBLE_MODULES.map((module) => ({

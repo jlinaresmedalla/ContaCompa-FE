@@ -1,11 +1,9 @@
 import { Filter } from 'lucide-react'
-import { IconButton } from '@/components/ui/icon-button'
+import { IconButton, Stat, ErrorNote } from '@/components/molecules'
 import { useTranslation } from 'react-i18next'
 
-import { Skeleton } from '@/components/ui/skeleton'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardTitle, Stat } from '@/components/ui/card'
-import { ErrorNote } from '@/components/ui/input'
+import { Skeleton, Badge, Card, CardTitle } from '@/components/atoms'
+
 import { toApiError } from '@/lib/http'
 
 import { useObservationReport } from '../hooks'
@@ -20,23 +18,7 @@ export function ObservationReport({ onPickCode }: { onPickCode: (code: string) =
   if (report.error && !report.data) return <ErrorNote message={toApiError(report.error).message} />
   const data = report.data
   return (
-    <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-1">
-        <Stat
-          label={t('report.documents')}
-          value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.documents ?? '—')}
-        />
-        <Stat
-          label={t('report.clean')}
-          value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.clean ?? '—')}
-        />
-        <Stat
-          label={t('report.withWarnings')}
-          value={
-            report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.with_warnings ?? '—')
-          }
-        />
-      </div>
+    <div className="space-y-4">
       <Card className="min-w-0">
         <CardTitle hint={t('report.hint')}>{t('report.title')}</CardTitle>
         {report.isLoading ? (
@@ -88,6 +70,30 @@ export function ObservationReport({ onPickCode }: { onPickCode: (code: string) =
           </div>
         )}
       </Card>
+    </div>
+  )
+}
+
+/** Global counts stay independent of list filters and pagination. */
+export function ObservationStats() {
+  const { t } = useTranslation()
+  const report = useObservationReport()
+  const data = report.data
+  if (report.error && !data) return <ErrorNote message={toApiError(report.error).message} />
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 [&>div]:min-w-0 [&>div:last-child]:col-span-2 lg:[&>div:last-child]:col-span-1">
+      <Stat
+        label={t('report.documents')}
+        value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.documents ?? '—')}
+      />
+      <Stat
+        label={t('report.clean')}
+        value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.clean ?? '—')}
+      />
+      <Stat
+        label={t('report.withWarnings')}
+        value={report.isLoading ? <Skeleton className="h-8 w-16" /> : (data?.with_warnings ?? '—')}
+      />
     </div>
   )
 }

@@ -3,6 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "./src/main.tsx",
+    "./src/app/i18n/index.ts",
+    "./src/app/router/router.tsx",
+    "./src/app/config/env.ts",
+    "./src/lib/http.ts",
+    "./src/test/setup.ts"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

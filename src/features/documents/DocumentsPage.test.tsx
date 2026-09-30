@@ -11,7 +11,10 @@ import { DocumentsPage } from './DocumentsPage'
 
 const FILTERED_DOCUMENT_COUNT = 2
 
-vi.mock('./components/ObservationReport', () => ({ ObservationReport: () => null }))
+vi.mock('./components/ObservationReport', () => ({
+  ObservationReport: () => null,
+  ObservationStats: () => null,
+}))
 
 beforeEach(() => {
   void i18n.changeLanguage('en')
@@ -167,3 +170,77 @@ test.each(['all', 'warning', 'any', 'none', 'invalid'])(
     list.mockRestore()
   },
 )
+
+const PURCHASE_DOC = {
+  id: 'doc-list',
+  supplier: { legal_name: 'Proveedor Lima', ruc: '20100070970' },
+  doc_type: 'invoice' as const,
+  doc_number: 'F001-456',
+  issue_date: '2026-09-30',
+  currency: 'PEN',
+  total_amount: '118',
+  prices_include_igv: true,
+  taxable_amount: '100',
+  igv_amount: '18',
+  has_warnings: false,
+  issues: [],
+  lines: [],
+}
+
+test('renders headed rows and follows pagination', async () => {
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockImplementation((_filters, offset) =>
+    Promise.resolve({
+      items: [{ ...PURCHASE_DOC, doc_number: offset === 0 ? 'F001-456' : 'F001-789' }],
+      next_offset: offset === 0 ? PAGE_SIZE : null,
+    }),
+  )
+  renderPage()
+  expect(await screen.findByRole('link', { name: 'F001-456' })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Actions' })).toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Lines' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+  expect(await screen.findByRole('link', { name: 'F001-789' })).toBeInTheDocument()
+  expect(screen.getByText('Page 2')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+  list.mockRestore()
+})
+
+test('clears a search with no match and restores the loaded rows', async () => {
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({
+    items: [PURCHASE_DOC],
+    next_offset: null,
+  })
+  renderPage()
+  expect(await screen.findByRole('link', { name: 'F001-456' })).toBeInTheDocument()
+  const search = screen.getByRole('searchbox')
+  fireEvent.change(search, { target: { value: 'missing supplier' } })
+  expect(screen.queryByRole('link', { name: 'F001-456' })).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+  expect(search).toHaveValue('')
+  expect(await screen.findByRole('link', { name: 'F001-456' })).toBeInTheDocument()
+  list.mockRestore()
+})
+
+test.each(['f001', 'proveedor', '20100070970'])('searches loaded records by %s', async (query) => {
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({
+    items: [PURCHASE_DOC],
+    next_offset: null,
+  })
+  renderPage()
+  await screen.findByRole('link', { name: 'F001-456' })
+  fireEvent.change(screen.getByRole('searchbox'), { target: { value: ` ${query} ` } })
+  expect(screen.getByRole('link', { name: 'F001-456' })).toBeInTheDocument()
+  list.mockRestore()
+})
+
+test('keeps records with missing number and supplier when search is blank', async () => {
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockResolvedValue({
+    items: [{ ...PURCHASE_DOC, doc_number: null, supplier: null }],
+    next_offset: null,
+  })
+  renderPage()
+  expect(await screen.findByRole('link', { name: '?' })).toBeInTheDocument()
+  fireEvent.change(screen.getByRole('searchbox'), { target: { value: '   ' } })
+  expect(screen.getByRole('link', { name: '?' })).toBeInTheDocument()
+  list.mockRestore()
+})

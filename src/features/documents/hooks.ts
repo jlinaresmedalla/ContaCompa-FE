@@ -7,7 +7,7 @@ import { toApiError } from '@/lib/http'
 import { notifyError, notifySuccess } from '@/lib/notify'
 
 import { DOCUMENT_API, DOCUMENT_KEYS } from './api'
-import type { CorrectionPayload, ListFilters, ObservationFilter } from './types'
+import type { CorrectionPayload, ListFilters, ObservationFilter, PurchaseDocSummary } from './types'
 
 export const OBSERVATION_FILTERS: readonly ObservationFilter[] = ['all', 'warning', 'any', 'none']
 
@@ -134,4 +134,18 @@ export function useExportXlsx() {
     },
     onError: (error) => notifyError(toApiError(error).message),
   })
+}
+
+/** The API paginates without a search parameter; search only the loaded page. */
+export function useDocumentSearch(docs: PurchaseDocSummary[] | undefined) {
+  const [search, setSearch] = useState('')
+  const query = search.trim().toLocaleLowerCase()
+  const matches = query
+    ? docs?.filter((doc) =>
+        [doc.doc_number, doc.supplier?.legal_name, doc.supplier?.ruc].some((value) =>
+          value?.toLocaleLowerCase().includes(query),
+        ),
+      )
+    : docs
+  return { search, setSearch, matches, hasSearch: Boolean(query) }
 }

@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { PublicLayout } from '@/components/layout/PublicLayout'
+import { PublicLayout } from '@/components/templates'
 import { HomePage } from '@/features/home/HomePage'
 import { http } from '@/lib/http'
 
@@ -135,15 +135,18 @@ test.each([null, 'key'])(
   },
 )
 
-test('an unknown path without a key redirects to Home', async () => {
-  API_KEY_STORE.clear()
-  const router = renderAt('/nowhere')
-  expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
-    'Purchase documents, read for you.',
-  )
-  expect(router.state.location.pathname).toBe('/')
-  expect(meSpy).not.toHaveBeenCalled()
-})
+test.each(['/nowhere', '/documents', '/assistant', '/costs'])(
+  'unknown path %s without a key redirects to Home',
+  async (path) => {
+    API_KEY_STORE.clear()
+    const router = renderAt(path)
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(
+      'Purchase documents, read for you.',
+    )
+    expect(router.state.location.pathname).toBe('/')
+    expect(meSpy).not.toHaveBeenCalled()
+  },
+)
 
 test('a private path without a key keeps its return path at sign-in', async () => {
   API_KEY_STORE.clear()

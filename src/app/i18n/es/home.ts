@@ -31,6 +31,15 @@ export const ES_HOME: Pick<Messages, 'home'> = {
         description: 'Con un clic, tu contador recibe un archivo de Excel.',
       },
     },
+    overview: {
+      interface: { title: 'Interfaz en React', description: 'Sube, revisa y exporta' },
+      service: { title: 'Servicio FastAPI', description: 'API tipada, una transacción' },
+      queue: { title: 'Cola en Postgres', description: 'Procesa sin bloquear la solicitud' },
+      extraction: {
+        title: 'Extracción con Gemini',
+        description: 'Esquema definido y costos registrados',
+      },
+    },
     architecture: 'Arquitectura y tecnologías',
     architectureIntro:
       'Una interfaz en React, un servicio en FastAPI y una cola de procesamientos en Postgres conectan los archivos con la extracción de Gemini.',

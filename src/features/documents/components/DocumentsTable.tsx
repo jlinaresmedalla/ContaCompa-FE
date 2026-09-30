@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '@/app/router/paths'
-import { IconButton } from '@/components/ui/icon-button'
-import { DataTable } from '@/components/ui/data-table'
+import { IconButton } from '@/components/molecules'
+import { DataTable } from '@/components/organisms'
 import { money } from '@/lib/format'
 
 import { useDeleteDoc } from '../hooks'
@@ -39,20 +39,7 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
   )
   return [
     {
-      id: 'expand',
-      header: '',
-      cell: ({ row }) => (
-        <IconButton
-          icon={ChevronRight}
-          label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
-          variant="ghost"
-          onClick={row.getToggleExpandedHandler()}
-          aria-expanded={row.getIsExpanded()}
-          className={row.getIsExpanded() ? '[&_svg]:rotate-90' : undefined}
-        />
-      ),
-    },
-    {
+      id: 'number',
       header: t('documents.columns.number'),
       cell: ({ row }) => (
         <Link
@@ -85,14 +72,17 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       ),
     },
     {
+      id: 'taxable',
       header: t('documents.columns.taxable'),
       cell: ({ row }) => amount(row.original.taxable_amount, row.original.currency),
     },
     {
+      id: 'igv',
       header: t('documents.columns.igv'),
       cell: ({ row }) => amount(row.original.igv_amount, row.original.currency),
     },
     {
+      id: 'totalWithIgv',
       header: t('documents.columns.totalWithIgv'),
       cell: ({ row }) => (
         <span className="font-semibold">
@@ -105,8 +95,22 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       cell: ({ row }) => <IssueBadges issues={row.original.issues} />,
     },
     {
+      id: 'expand',
+      header: t('documents.columns.lines'),
+      cell: ({ row }) => (
+        <IconButton
+          icon={ChevronRight}
+          label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
+          variant="ghost"
+          onClick={row.getToggleExpandedHandler()}
+          aria-expanded={row.getIsExpanded()}
+          className={row.getIsExpanded() ? '[&_svg]:rotate-90' : undefined}
+        />
+      ),
+    },
+    {
       id: 'actions',
-      header: '',
+      header: t('documents.columns.actions'),
       cell: ({ row }) => (
         <div className="flex justify-end gap-1">
           <IconButton asChild icon={ExternalLink} label={t('common.open')} variant="outline">
@@ -128,14 +132,16 @@ export function DocumentsTable(props: {
   const { t } = useTranslation()
   const columns = useMemo(() => buildColumns(t), [t])
   return (
-    <DataTable
-      columns={columns}
-      data={props.docs}
-      isLoading={props.isLoading}
-      error={props.error}
-      empty={props.empty ?? t('documents.empty')}
-      getRowId={(row) => row.id}
-      renderSubRow={(row) => <LinePrices doc={row.original} />}
-    />
+    <div className="min-w-0 [&_button]:min-h-13 [&_button]:min-w-13 md:[&_button]:min-h-0 md:[&_button]:min-w-0 [&>div]:rounded-card [&_th:nth-child(5)]:text-right [&_th:nth-child(6)]:text-right [&_th:nth-child(7)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(7)]:text-right [&_th:last-child]:text-right">
+      <DataTable
+        columns={columns}
+        data={props.docs}
+        isLoading={props.isLoading}
+        error={props.error}
+        empty={props.empty ?? t('documents.empty')}
+        getRowId={(row) => row.id}
+        renderSubRow={(row) => <LinePrices doc={row.original} />}
+      />
+    </div>
   )
 }

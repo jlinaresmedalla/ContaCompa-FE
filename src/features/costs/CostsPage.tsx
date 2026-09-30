@@ -3,14 +3,10 @@ import { Link } from 'react-router'
 import { Trans, useTranslation } from 'react-i18next'
 
 import { PATHS } from '@/app/router/paths'
-import { AppSelect } from '@/components/ui/app-select'
+import { AppSelect, EmptyState, PageHeader, Stat, ErrorNote } from '@/components/molecules'
 import { useCostPeriod } from './use-cost-period'
-import { Button } from '@/components/ui/button'
-import { EmptyState } from '@/components/ui/empty-state'
-import { PageHeader } from '@/components/ui/page-header'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardTitle, Stat } from '@/components/ui/card'
-import { ErrorNote } from '@/components/ui/input'
+import { Button, Skeleton, Card, CardTitle, TableRow } from '@/components/atoms'
+
 import { number, usd } from '@/lib/format'
 import { toApiError } from '@/lib/http'
 
@@ -22,6 +18,7 @@ const BILLED_USD_DIGITS = 2
 const PER_DOCUMENT_USD_DIGITS = 5
 const QUOTE_DOCUMENT_COUNT = 1000
 const MODEL_SKELETON_COUNT = 5
+const MODEL_COLUMNS = ['model', 'docs', 'input', 'output', 'billed', 'list', 'perDoc'] as const
 
 export function CostsPage() {
   const { t } = useTranslation()
@@ -34,9 +31,8 @@ export function CostsPage() {
       tokens: number(line.input_tokens + line.output_tokens),
       billed: usd(line.billed_usd, BILLED_USD_DIGITS),
     })
-  const columns = ['model', 'docs', 'input', 'output', 'billed', 'list', 'perDoc'] as const
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       <PageHeader
         title={t('nav.costs')}
         description={t('pageStates.costs')}
@@ -77,7 +73,7 @@ export function CostsPage() {
               components={{ b: <strong className="text-foreground" /> }}
             />
           </p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 [&>div]:min-w-0">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 [&>div]:min-w-0 [&>div]:min-h-[6.875rem]">
             <Stat
               label={t('costs.today')}
               value={data ? usd(data.today.list_usd) : <Skeleton className="h-8 w-24" />}
@@ -114,68 +110,80 @@ export function CostsPage() {
               }
             />
           </div>
-          <Card>
-            <CardTitle hint={t('costs.lastDays', { count: days })}>{t('costs.perDay')}</CardTitle>
-            {data ? <DailyChart days={data.by_day} /> : <Skeleton className="h-48 w-full" />}
-          </Card>
-          <Card>
-            <CardTitle>{t('costs.byModel')}</CardTitle>
-            <div className="max-w-full min-w-0 overflow-x-auto">
-              <table className="w-full text-sm whitespace-nowrap">
-                <thead className="bg-muted text-left text-xs text-muted-foreground">
-                  <tr>
-                    {columns.map((column) => (
-                      <th
-                        key={column}
-                        className={
-                          column === 'model'
-                            ? 'sticky left-0 z-10 border-r border-border bg-muted py-1 pr-2 font-semibold'
-                            : 'py-1 text-right font-semibold'
-                        }
-                      >
-                        {t(`costs.columns.${column}`)}
-                      </th>
+          <div className="grid min-w-0 items-stretch gap-4 lg:grid-cols-2">
+            <Card className="min-w-0">
+              <CardTitle
+                className="flex-col items-start lg:flex-row [&_h2]:text-lg"
+                hint={t('costs.lastDays', { count: days })}
+              >
+                {t('costs.perDay')}
+              </CardTitle>
+              {data ? <DailyChart days={data.by_day} /> : <Skeleton className="h-48 w-full" />}
+            </Card>
+            <Card className="min-w-0 overflow-hidden p-0">
+              <CardTitle className="mb-0 h-16 items-center border-b border-border px-card [&_h2]:text-lg">
+                {t('costs.byModel')}
+              </CardTitle>
+              <div className="max-w-full min-w-0 overflow-x-auto">
+                <table className="w-full text-sm whitespace-nowrap [&_th:nth-child(3)]:hidden [&_th:nth-child(4)]:hidden [&_td:nth-child(3)]:hidden [&_td:nth-child(4)]:hidden lg:[&_th:nth-child(3)]:table-cell lg:[&_th:nth-child(4)]:table-cell lg:[&_td:nth-child(3)]:table-cell lg:[&_td:nth-child(4)]:table-cell">
+                  <thead className="bg-muted text-left text-xs text-muted-foreground">
+                    <TableRow className="h-table-header">
+                      {MODEL_COLUMNS.map((column) => (
+                        <th
+                          key={column}
+                          scope="col"
+                          className={
+                            column === 'model'
+                              ? 'sticky left-0 z-10 border-r border-border bg-muted px-3 font-medium'
+                              : 'px-3 text-right font-medium'
+                          }
+                        >
+                          {t(`costs.columns.${column}`)}
+                        </th>
+                      ))}
+                    </TableRow>
+                  </thead>
+                  <tbody className="tabular-nums">
+                    {report.isLoading
+                      ? Array.from({ length: MODEL_SKELETON_COUNT }, (_, i) => (
+                          <TableRow key={i} className="h-table-row">
+                            {MODEL_COLUMNS.map((column) => (
+                              <td
+                                key={column}
+                                className={
+                                  column === 'model'
+                                    ? 'sticky left-0 z-10 border-r border-border bg-card px-3'
+                                    : 'px-3'
+                                }
+                              >
+                                <Skeleton className="h-4 w-full" />
+                              </td>
+                            ))}
+                          </TableRow>
+                        ))
+                      : null}
+                    {(data?.by_model ?? []).map((row) => (
+                      <TableRow key={row.model} className="h-table-row border-t border-border">
+                        <td className="sticky left-0 z-10 border-r border-border bg-card px-3">
+                          <span className="block max-w-48 truncate" title={row.model}>
+                            {row.model}
+                          </span>
+                        </td>
+                        <td className="px-3 text-right">{row.docs}</td>
+                        <td className="px-3 text-right">{number(row.input_tokens)}</td>
+                        <td className="px-3 text-right">{number(row.output_tokens)}</td>
+                        <td className="px-3 text-right">{usd(row.billed_usd)}</td>
+                        <td className="px-3 text-right">{usd(row.list_usd)}</td>
+                        <td className="px-3 text-right">
+                          {usd(row.list_usd_per_doc, PER_DOCUMENT_USD_DIGITS)}
+                        </td>
+                      </TableRow>
                     ))}
-                  </tr>
-                </thead>
-                <tbody className="tabular-nums">
-                  {report.isLoading
-                    ? Array.from({ length: MODEL_SKELETON_COUNT }, (_, i) => (
-                        <tr key={i}>
-                          {columns.map((column) => (
-                            <td
-                              key={column}
-                              className={
-                                column === 'model'
-                                  ? 'sticky left-0 z-10 border-r border-border bg-card py-2'
-                                  : 'py-2'
-                              }
-                            >
-                              <Skeleton className="h-4 w-full" />
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    : null}
-                  {(data?.by_model ?? []).map((row) => (
-                    <tr key={row.model} className="border-t border-border">
-                      <td className="sticky left-0 z-10 border-r border-border bg-card py-1.5 pr-2">
-                        {row.model}
-                      </td>
-                      <td className="py-1.5 text-right">{row.docs}</td>
-                      <td className="py-1.5 text-right">{number(row.input_tokens)}</td>
-                      <td className="py-1.5 text-right">{number(row.output_tokens)}</td>
-                      <td className="py-1.5 text-right">{usd(row.billed_usd)}</td>
-                      <td className="py-1.5 text-right">{usd(row.list_usd)}</td>
-                      <td className="py-1.5 text-right">
-                        {usd(row.list_usd_per_doc, PER_DOCUMENT_USD_DIGITS)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
         </>
       )}
     </div>

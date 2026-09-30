@@ -3,18 +3,22 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 import { PATHS } from '@/app/router/paths'
-import { PageHeader } from '@/components/ui/page-header'
-import { EmptyState } from '@/components/ui/empty-state'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { IconButton } from '@/components/ui/icon-button'
-import { Segmented } from '@/components/ui/segmented'
+import { PageHeader, EmptyState, IconButton, Segmented } from '@/components/molecules'
+
+import { Badge, Button, Input } from '@/components/atoms'
+
 import { toApiError } from '@/lib/http'
 
 import { PAGE_SIZE } from './api'
 import { DocumentsTable } from './components/DocumentsTable'
-import { ObservationReport } from './components/ObservationReport'
-import { OBSERVATION_FILTERS, useExportXlsx, useListFilters, usePurchaseDocs } from './hooks'
+import { ObservationReport, ObservationStats } from './components/ObservationReport'
+import {
+  OBSERVATION_FILTERS,
+  useDocumentSearch,
+  useExportXlsx,
+  useListFilters,
+  usePurchaseDocs,
+} from './hooks'
 import { observationLabel } from './observations'
 import type { ObservationFilter } from './types'
 
@@ -23,32 +27,23 @@ export function DocumentsPage() {
   const [filters, setFilters, offset, setOffset] = useListFilters()
   const docs = usePurchaseDocs(filters, offset)
   const exportXlsx = useExportXlsx()
+  const { search, setSearch, matches, hasSearch } = useDocumentSearch(docs.data?.items)
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={t('nav.purchaseDocs')}
-        description={t('pageStates.documents')}
-        actions={
-          <IconButton
-            icon={Download}
-            label={exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
-            variant="outline"
-            disabled={exportXlsx.isPending}
-            onClick={() => exportXlsx.mutate(i18n.language)}
-          />
-        }
-      />
-      <ObservationReport onPickCode={(code) => setFilters({ observations: 'all', code })} />
+    <div className="min-w-0 space-y-6">
+      <PageHeader title={t('nav.purchaseDocs')} description={t('pageStates.documents')} />
+      <ObservationStats />
       <div className="flex flex-wrap items-center gap-2 [&>[role=radiogroup]]:max-w-full [&>[role=radiogroup]]:flex-wrap">
-        <Segmented<ObservationFilter>
-          label={t('documents.filterLabel')}
-          value={filters.observations}
-          options={OBSERVATION_FILTERS.map((value) => ({
-            value,
-            label: t(`documents.filters.${value}`),
-          }))}
-          onChange={(observations) => setFilters({ observations, code: null })}
-        />
+        <div className="w-full min-w-0 lg:w-[35rem] [&_button]:h-control">
+          <Segmented<ObservationFilter>
+            label={t('documents.filterLabel')}
+            value={filters.observations}
+            options={OBSERVATION_FILTERS.map((value) => ({
+              value,
+              label: t(`documents.filters.${value}`),
+            }))}
+            onChange={(observations) => setFilters({ observations, code: null })}
+          />
+        </div>
         {filters.code ? (
           <span className="flex min-w-0 max-w-full flex-wrap items-center gap-2 [&>[data-slot=badge]]:whitespace-normal">
             <Badge tone="info">
@@ -62,10 +57,28 @@ export function DocumentsPage() {
             />
           </span>
         ) : null}
+        <div className="flex w-full min-w-0 items-center gap-2 lg:ml-auto lg:w-auto">
+          <Input
+            className="min-w-0 flex-1 lg:w-64"
+            type="search"
+            aria-label={t('documents.searchPage')}
+            placeholder={t('documents.searchPage')}
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+          <IconButton
+            className="h-control w-13 md:w-10.5"
+            icon={Download}
+            label={exportXlsx.isPending ? t('documents.exporting') : t('documents.export')}
+            variant="outline"
+            disabled={exportXlsx.isPending}
+            onClick={() => exportXlsx.mutate(i18n.language)}
+          />
+        </div>
       </div>
       <DocumentsTable
         empty={
-          filters.observations !== 'all' || filters.code ? (
+          filters.observations !== 'all' || filters.code || hasSearch ? (
             <EmptyState
               icon={Search}
               title={t('pageStates.filteredTitle')}
@@ -75,7 +88,10 @@ export function DocumentsPage() {
                   icon={X}
                   label={t('pageStates.clear')}
                   variant="outline"
-                  onClick={() => setFilters({ observations: 'all', code: null })}
+                  onClick={() => {
+                    setSearch('')
+                    setFilters({ observations: 'all', code: null })
+                  }}
                 />
               }
             />
@@ -95,11 +111,11 @@ export function DocumentsPage() {
             />
           )
         }
-        docs={docs.data?.items}
+        docs={matches}
         isLoading={docs.isLoading}
         error={docs.error ? toApiError(docs.error).message : null}
       />
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 [&_button]:h-control [&_button]:w-13 md:[&_button]:w-10.5">
         <IconButton
           icon={ChevronLeft}
           label={t('documents.previous')}
@@ -118,6 +134,7 @@ export function DocumentsPage() {
           onClick={() => setOffset(docs.data!.next_offset!)}
         />
       </div>
+      <ObservationReport onPickCode={(code) => setFilters({ observations: 'all', code })} />
     </div>
   )
 }

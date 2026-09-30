@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/atoms'
 
 import { TOKEN_NAMES } from '../constants'
 import { useDesignTokens } from './use-design-tokens'
