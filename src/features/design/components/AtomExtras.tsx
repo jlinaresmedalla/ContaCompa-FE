@@ -79,7 +79,7 @@ export function AtomExtras() {
           </Tooltip>
         </TooltipProvider>
       </DesignSection>
-      <DesignSection name="Table">
+      <DesignSection name="Table" framed={false}>
         <Table>
           <TableCaption>{t('design.sample')}</TableCaption>
           <TableHeader>

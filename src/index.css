@@ -132,7 +132,10 @@
   --shell-content-top: 1.75rem;
   --shell-content-sides: 2.25rem;
   --shell-content-phone: 1.125rem;
-  --shell-content-width: 91.5rem;
+  --shell-content-width: 160rem;
+  --shell-content-padding: clamp(1rem, 2.2vw, 3.5rem);
+  --stat-card-width: 12rem;
+  --table-column-width: 8rem;
   --account-menu-width: 19.375rem;
   --control-height: 2.625rem;
   --control-compact-height: 2.25rem;
@@ -146,8 +149,8 @@
   --icon-button-row-size: 2rem;
   --stat-card-height: 5.75rem;
   --list-row-height: 4.875rem;
-  --table-header-height: 3.125rem;
-  --table-row-height: 3.75rem;
+  --table-header-compact-height: 2.5rem;
+  --table-row-compact-height: 2.875rem;
   --card-padding: 1.375rem;
   --card-radius: 0.875rem;
   --control-radius: 0.75rem;
@@ -265,6 +268,9 @@
   --spacing-shell-top: var(--shell-content-top);
   --spacing-shell-sides: var(--shell-content-sides);
   --spacing-shell-phone: var(--shell-content-phone);
+  --spacing-shell-fluid: var(--shell-content-padding);
+  --spacing-stat-width: var(--stat-card-width);
+  --spacing-table-column: var(--table-column-width);
   --spacing-shell-content: var(--shell-content-width);
   --spacing-account-menu: var(--account-menu-width);
   --spacing-control: var(--control-current-height);
@@ -277,8 +283,8 @@
   --spacing-icon-button-row: var(--icon-button-row-size);
   --spacing-stat-card: var(--stat-card-height);
   --spacing-list-row: var(--list-row-height);
-  --spacing-table-header: var(--table-header-height);
-  --spacing-table-row: var(--table-row-height);
+  --spacing-table-header-compact: var(--table-header-compact-height);
+  --spacing-table-row-compact: var(--table-row-compact-height);
   --spacing-card: var(--card-padding);
   --radius-card: var(--card-radius);
   --radius-control: var(--control-radius);
@@ -457,4 +463,79 @@
 @utility select-focus {
   outline: var(--focus-width) solid var(--ring);
   outline-offset: var(--focus-offset);
+}
+
+/* Keep enabled controls clickable even when primitives set a default cursor. */
+:where(
+    button,
+    a[href],
+    summary,
+    label[for],
+    [role='button'],
+    [role='tab'],
+    [role='radio'],
+    [role='option'],
+    [role='menuitem'],
+    [role='menuitemradio'],
+    [role='menuitemcheckbox']
+  ):not(:disabled):not([aria-disabled='true']):not([data-disabled]) {
+  cursor: pointer;
+}
+
+/* Scroll rows retain touch/keyboard scrolling without a visible track. */
+.scroll-row {
+  scrollbar-width: none;
+  --scroll-fade-start: black;
+  --scroll-fade-end: black;
+}
+.scroll-row[data-fade='start'],
+.scroll-row[data-fade='both'] {
+  --scroll-fade-start: transparent;
+}
+.scroll-row[data-fade='end'],
+.scroll-row[data-fade='both'] {
+  --scroll-fade-end: transparent;
+}
+.scroll-row:not([data-fade='none']) {
+  mask-image: linear-gradient(
+    to right,
+    var(--scroll-fade-start),
+    black 0.75rem,
+    black calc(100% - 0.75rem),
+    var(--scroll-fade-end)
+  );
+}
+.scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* All framed tables share content sizing and cell geometry. */
+[data-slot='table'] :is(th, td) {
+  width: 1%;
+  min-width: 4rem;
+  padding: 0.375rem 0.875rem;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+[data-slot='table'] :is(th, td):first-child {
+  padding-left: 1rem;
+}
+[data-slot='table'] :is(th, td):last-child {
+  padding-right: 1rem;
+}
+[data-slot='table'] thead tr {
+  height: var(--table-row-compact-height);
+}
+[data-slot='table'] [data-column='text'] {
+  width: auto;
+  min-width: 8rem;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+[data-slot='table'] .sticky {
+  border-right-width: 0;
+}
+[data-slot='table-container'][data-scrolled='true'] [data-slot='table'] .sticky {
+  box-shadow: 1px 0 var(--border);
 }

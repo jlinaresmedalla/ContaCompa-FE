@@ -9,7 +9,8 @@ export const EN_JOBS = {
     clear: 'Clear filters',
     inProgress: 'In progress',
     viewJob: 'View job',
-    attempts: '{{count}} attempts',
+    attempts_one: '{{count}} attempt',
+    attempts_other: '{{count}} attempts',
     details: 'Job details',
     progressHint: 'Processing updates automatically.',
 
@@ -18,7 +19,7 @@ export const EN_JOBS = {
     pausedNext: ' Next attempt at {{time}} (local time).',
     upload: 'Upload files',
     uploadHint: 'PDF or photo (JPEG or PNG) · size limit set by the server',
-    drop: 'Drop files here or',
+    drop: 'Drop files here or choose files',
     choose: 'Choose files',
     uploading: 'Uploading…',
     chooseLabel: 'Choose files to upload',
@@ -53,7 +54,7 @@ export const EN_JOBS = {
   },
   jobStatusHint: {
     queued: 'Waiting to start',
-    processing: 'Gemini is reading the file',
+    processing: 'AI is reading the file',
     done: 'Purchase doc created',
     failed: 'Will retry automatically',
     dead: 'No retries left',

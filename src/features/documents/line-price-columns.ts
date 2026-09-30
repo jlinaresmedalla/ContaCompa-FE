@@ -5,12 +5,14 @@ const PRICE_PAIRS = {
       derived: 'unit_price_with_igv',
       includes: true,
       heading: 'prices.unitWith',
+      short: 'prices.short.unitWith',
     },
     {
       field: 'line_total',
       derived: 'line_total_with_igv',
       includes: true,
       heading: 'prices.totalWith',
+      short: 'prices.short.totalWith',
     },
   ],
   without: [
@@ -19,12 +21,14 @@ const PRICE_PAIRS = {
       derived: 'unit_price_without_igv',
       includes: false,
       heading: 'prices.unitWithout',
+      short: 'prices.short.unitWithout',
     },
     {
       field: 'line_total',
       derived: 'line_total_without_igv',
       includes: false,
       heading: 'prices.totalWithout',
+      short: 'prices.short.totalWithout',
     },
   ],
 } as const

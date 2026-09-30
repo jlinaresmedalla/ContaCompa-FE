@@ -52,7 +52,15 @@ export const ES_DESIGN: Pick<Messages, 'design'> = {
       organisms: 'Organismos',
       templates: 'Plantillas',
     },
+    previewSample:
+      'Ejemplo local: archivo oculto y cargando; no se solicita ningún archivo. En contenedores angostos el ejemplo se apila.',
+    observationSample: 'El importe impreso difiere de la suma de los ítems.',
     sections: {
+      MoreActions: 'Más acciones y confirmación',
+      ModeMenus: 'Menús de idioma y tema',
+      PreviewColumn: 'Observaciones y columna del archivo',
+      StatRow: 'Fila de indicadores',
+      FilterPills: 'Filtros',
       PageSkeleton: 'Esqueleto de página',
       ErrorNote: 'Mensaje de error',
       Brand: 'Marca',

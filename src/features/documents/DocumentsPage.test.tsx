@@ -12,7 +12,6 @@ import { DocumentsPage } from './DocumentsPage'
 const FILTERED_DOCUMENT_COUNT = 2
 
 vi.mock('./components/ObservationReport', () => ({
-  ObservationReport: () => null,
   ObservationStats: () => null,
 }))
 
@@ -55,7 +54,7 @@ test('uses next_offset and resets to the first page when filters change', async 
       expect.any(AbortSignal),
     ),
   )
-  fireEvent.click(screen.getByRole('radio', { name: 'With warnings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'With warnings' }))
   await waitFor(() =>
     expect(list).toHaveBeenCalledWith(
       { observations: 'warning', code: null },
@@ -197,7 +196,8 @@ test('renders headed rows and follows pagination', async () => {
   renderPage()
   expect(await screen.findByRole('link', { name: 'F001-456' })).toBeInTheDocument()
   expect(screen.getByRole('columnheader', { name: 'Actions' })).toBeInTheDocument()
-  expect(screen.getByRole('columnheader', { name: 'Lines' })).toBeInTheDocument()
+  expect(screen.queryByRole('columnheader', { name: 'Lines' })).toBeNull()
+  expect(screen.getByRole('button', { name: i18n.t('prices.expand') })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   expect(await screen.findByRole('link', { name: 'F001-789' })).toBeInTheDocument()
   expect(screen.getByText('Page 2')).toBeInTheDocument()
@@ -242,5 +242,25 @@ test('keeps records with missing number and supplier when search is blank', asyn
   expect(await screen.findByRole('link', { name: '?' })).toBeInTheDocument()
   fireEvent.change(screen.getByRole('searchbox'), { target: { value: '   ' } })
   expect(screen.getByRole('link', { name: '?' })).toBeInTheDocument()
+  list.mockRestore()
+})
+
+test('pills request filtered rows and the removed observation report stays absent', async () => {
+  const list = vi.spyOn(DOCUMENT_API, 'list').mockImplementation((filters) =>
+    Promise.resolve({
+      items: filters.observations === 'warning' ? [] : [PURCHASE_DOC],
+      next_offset: null,
+    }),
+  )
+  renderPage()
+  await screen.findByRole('link', { name: 'F001-456' })
+  const pill = screen.getByRole('button', { name: 'With warnings' })
+  fireEvent.click(pill)
+  expect(pill).toHaveAttribute('aria-pressed', 'true')
+  await screen.findByRole('button', { name: 'Clear filters' })
+  expect(screen.queryByRole('link', { name: 'F001-456' })).toBeNull()
+  expect(screen.queryByText(i18n.t('report.title'))).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+  expect(await screen.findByRole('link', { name: 'F001-456' })).toBeInTheDocument()
   list.mockRestore()
 })

@@ -11,7 +11,7 @@ const UNAVAILABLE_ATTEMPTS = 2
 const OPEN_UNTIL = '2026-09-29T15:45:00-05:00'
 
 function breaker(patch: Partial<ProviderBreaker>): ProviderBreaker {
-  return { name: 'gemini', state: 'open', open_until: OPEN_UNTIL, reason: 'quota', ...patch }
+  return { name: 'AI', state: 'open', open_until: OPEN_UNTIL, reason: 'quota', ...patch }
 }
 
 function expectedTime() {

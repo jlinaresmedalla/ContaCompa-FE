@@ -1,3 +1,4 @@
+import { Table } from '@/components/atoms'
 import { Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateTime } from '@/lib/format'
@@ -10,10 +11,10 @@ export function CorrectionHistory({ doc }: { doc: PurchaseDocDetail }) {
   if (!doc.corrections.length)
     return <p className="p-card text-sm text-muted-foreground">{t('detail.noCorrections')}</p>
   return (
-    <div className="max-w-full overflow-x-auto">
-      <table className="w-full text-sm">
+    <>
+      <Table className="w-full text-sm">
         <thead>
-          <tr className="h-table-header border-b border-border text-left text-xs text-muted-foreground">
+          <tr className="h-table-header-compact border-b border-border text-left text-xs text-muted-foreground">
             <th className="px-5.5">
               <span className="sr-only">{t('detail.changed')}</span>
             </th>
@@ -32,7 +33,7 @@ export function CorrectionHistory({ doc }: { doc: PurchaseDocDetail }) {
           {doc.corrections.map((correction, index) => {
             const line = doc.lines.find((item) => item.id === correction.line_id)
             return (
-              <tr key={index} className="h-table-row border-b border-border last:border-0">
+              <tr key={index} className="h-table-row-compact border-b border-border last:border-0">
                 <td className="px-5.5">
                   <span className="flex size-icon-button items-center justify-center rounded-control border border-primary/20 bg-primary/5 text-primary">
                     <Pencil aria-hidden="true" className="size-4" />
@@ -49,10 +50,12 @@ export function CorrectionHistory({ doc }: { doc: PurchaseDocDetail }) {
                     </span>
                   ) : null}
                 </th>
-                <td className={`${CELL} text-muted-foreground`}>
+                <td data-column="text" className={`${CELL} text-muted-foreground`}>
                   {correction.old_value ?? t('detail.missingValue')}
                 </td>
-                <td className={CELL}>{correction.new_value ?? t('detail.missingValue')}</td>
+                <td data-column="text" className={CELL}>
+                  {correction.new_value ?? t('detail.missingValue')}
+                </td>
                 <td
                   className={`${CELL} text-right text-muted-foreground whitespace-nowrap`}
                   title={correction.corrected_by}
@@ -63,7 +66,7 @@ export function CorrectionHistory({ doc }: { doc: PurchaseDocDetail }) {
             )
           })}
         </tbody>
-      </table>
-    </div>
+      </Table>
+    </>
   )
 }

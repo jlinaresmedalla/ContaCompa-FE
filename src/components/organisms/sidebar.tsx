@@ -17,18 +17,25 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   )
 }
 export function SidebarTrigger() {
-  const { isMobile, open, toggleSidebar } = useSidebar()
+  const { isMobile, open, forcedRail, toggleSidebar } = useSidebar()
   const { t } = useTranslation()
   if (isMobile)
     return (
       <Dialog.Trigger asChild>
-        <IconButton icon={Menu} label={t('nav.open')} className="min-h-control min-w-control" />
+        <IconButton
+          variant="ghost"
+          icon={Menu}
+          label={t('nav.open')}
+          className="min-h-control min-w-control"
+        />
       </Dialog.Trigger>
     )
   return (
     <IconButton
       icon={open ? PanelLeftClose : PanelLeftOpen}
       label={t(open ? 'nav.collapse' : 'nav.expand')}
+      variant="ghost"
+      disabled={forcedRail}
       onClick={toggleSidebar}
     />
   )

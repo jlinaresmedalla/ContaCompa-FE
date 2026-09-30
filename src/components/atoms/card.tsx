@@ -1,12 +1,17 @@
 import * as React from 'react'
 import { cn } from '@/lib/cn'
 
-function Card({ className, ...props }: React.ComponentProps<'div'>) {
+function Card({
+  className,
+  flush = false,
+  ...props
+}: React.ComponentProps<'div'> & { flush?: boolean }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        'rounded-card border border-border bg-card p-card text-card-foreground',
+        '@container/card rounded-card border border-border bg-card text-card-foreground',
+        flush ? 'overflow-hidden' : 'p-card',
         className,
       )}
       {...props}

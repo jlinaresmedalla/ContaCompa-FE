@@ -1,4 +1,4 @@
-import { Globe, Monitor, Moon, Sun } from 'lucide-react'
+import { Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { LANGUAGES, setLanguage } from '@/app/i18n'
@@ -8,24 +8,12 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-  ToggleGroup,
-  ToggleGroupItem,
 } from '@/components/atoms'
 
-import { THEMES, type Theme } from '@/lib/theme'
-import { useThemeSwitch } from './use-theme-switch'
-
-const THEME_ICONS = { light: Sun, dark: Moon, system: Monitor }
+import { PreferenceMenus } from './PublicPhonePreferences'
 
 export function PreferenceSwitches() {
-  return (
-    <>
-      <LanguageSwitch />
-      <TooltipProvider>
-        <ThemeSwitch />
-      </TooltipProvider>
-    </>
-  )
+  return <PreferenceMenus />
 }
 
 export function LanguageSwitch() {
@@ -59,41 +47,5 @@ export function LanguageSwitch() {
         ))}
       </div>
     </TooltipProvider>
-  )
-}
-
-function ThemeSwitch() {
-  const { t } = useTranslation()
-  const { theme, setTheme } = useThemeSwitch()
-  return (
-    <ToggleGroup
-      type="single"
-      role="radiogroup"
-      aria-label={t('sidebar.theme')}
-      value={theme}
-      spacing={1}
-      onValueChange={(value) => {
-        if (value) setTheme(value as Theme)
-      }}
-      className="h-[2.625rem] shrink-0 rounded-full bg-muted p-1"
-    >
-      {THEMES.map((value) => {
-        const Icon = THEME_ICONS[value]
-        return (
-          <Tooltip key={value}>
-            <TooltipTrigger asChild>
-              <ToggleGroupItem
-                value={value}
-                aria-label={t(`sidebar.${value}`)}
-                className="size-8 rounded-full p-0 text-muted-foreground hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground"
-              >
-                <Icon className="size-4" aria-hidden="true" />
-              </ToggleGroupItem>
-            </TooltipTrigger>
-            <TooltipContent>{t(`sidebar.${value}`)}</TooltipContent>
-          </Tooltip>
-        )
-      })}
-    </ToggleGroup>
   )
 }

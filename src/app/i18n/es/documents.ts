@@ -12,6 +12,8 @@ export const ES_DOCUMENTS: Pick<
   | 'sourceKind'
 > = {
   documents: {
+    observationCount_one: '{{count}} observación',
+    observationCount_other: '{{count}} observaciones',
     filters: {
       all: 'Todos',
       warning: 'Con alertas',
@@ -46,6 +48,15 @@ export const ES_DOCUMENTS: Pick<
     },
   },
   prices: {
+    short: {
+      quantity: 'Cant.',
+      unit: 'Unidad',
+      description: 'Descripción',
+      unitWith: 'P. unit. c/IGV',
+      totalWith: 'Importe c/IGV',
+      unitWithout: 'P. unit. s/IGV',
+      totalWithout: 'Importe s/IGV',
+    },
     printed: 'Impreso',
     printedWith: 'Los precios impresos incluyen IGV',
     printedWithout: 'Los precios impresos no incluyen IGV',
@@ -92,8 +103,12 @@ export const ES_DOCUMENTS: Pick<
     other: 'Otro',
   },
   detail: {
-    derivedPrices:
-      'Los valores impresos están en negrita. Los otros precios los calcula el servidor al guardar y no se pueden editar.',
+    units: { unit: 'Unidad', kg: 'Kilogramo', g: 'Gramo', l: 'Litro', m: 'Metro' },
+    items: 'Ítems',
+    moreActions: 'Más acciones',
+    deleteTitle: '¿Eliminar comprobante?',
+    issueDate: 'Fecha de emisión',
+    derivedPrices: 'Los valores impresos están en negrita; los otros precios son calculados.',
     historyColumns: {
       field: 'Campo',
       before: 'Antes',

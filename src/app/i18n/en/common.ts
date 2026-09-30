@@ -1,5 +1,8 @@
 export const EN_COMMON = {
   common: {
+    tableSectionCount: '{{label}} · {{count}}',
+    purchaseDocs_one: '{{count}} purchase doc',
+    purchaseDocs_other: '{{count}} purchase docs',
     selectGuidance:
       'Use Up and Down to move, Enter to select, Escape to close, and Left or Backspace to remove selected values.',
     selectSelected: 'Selected: {{label}}.',

@@ -1,18 +1,10 @@
-import {
-  ChevronRight,
-  FileText,
-  Image,
-  ListFilter,
-  RotateCcw,
-  ArrowDownWideNarrow,
-  Upload,
-} from 'lucide-react'
+import { ChevronRight, FileText, Image, RotateCcw, ArrowDownWideNarrow, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '@/app/router/paths'
-import { Badge, Button, Card, Input, Skeleton, type BadgeTone } from '@/components/atoms'
-import { AppSelect, EmptyState, IconButton } from '@/components/molecules'
+import { Badge, Button, Input, Skeleton, type BadgeTone } from '@/components/atoms'
+import { FilterPills, EmptyState, IconButton } from '@/components/molecules'
 import { dateTime, seconds } from '@/lib/format'
 import { useJobsList, useRetryJob } from '../hooks'
 import type { JobRow, JobStatus } from '../types'
@@ -27,7 +19,7 @@ const STATUS_TONE: Record<JobStatus, BadgeTone> = {
 const FILTER_STATUSES = ['all', 'done', 'processing', 'dead', 'queued', 'failed'] as const
 const SKELETON_ROWS = 3
 const ROW_CLASS =
-  'flex min-h-list-row items-center gap-3.5 border-b border-border px-4.5 py-3 last:border-b-0 md:h-list-row md:gap-4.5 md:px-5.5'
+  'flex min-h-list-row items-center gap-3.5 border-b border-border px-4 py-0 last:border-b-0 md:h-list-row'
 
 function RetryButton({ jobId }: { jobId: string }) {
   const { t } = useTranslation()
@@ -71,22 +63,22 @@ function JobListRow({ job }: { job: JobRow }) {
           </span>
         </div>
       </div>
-      <div className="hidden w-27.5 shrink-0 md:block">
+      <div className="hidden shrink-0 md:block">
         <Badge tone={STATUS_TONE[job.status]}>{t(`jobStatus.${job.status}`)}</Badge>
       </div>
       <div
-        className="hidden w-20.5 shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
+        className="hidden shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
         aria-label={t('jobs.columns.took')}
       >
         {seconds(job.created_at, job.finished_at)}
       </div>
       <div
-        className="hidden w-32 shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
+        className="hidden shrink-0 text-right text-xs tabular-nums text-muted-foreground md:block"
         aria-label={t('jobs.columns.attempts')}
       >
         {t('jobs.attempts', { count: job.attempts })}
       </div>
-      <div className="flex shrink-0 justify-end md:w-20.5">
+      <div className="flex shrink-0 justify-end">
         {job.status === 'dead' ? (
           <RetryButton jobId={job.job_id} />
         ) : job.purchase_doc_id ? (
@@ -108,11 +100,9 @@ function JobListRow({ job }: { job: JobRow }) {
 
 export function JobsTable({
   jobs,
-  onUpload,
   isLoading,
   error,
 }: {
-  onUpload: () => void
   jobs: JobRow[] | undefined
   isLoading: boolean
   error: string | null
@@ -125,65 +115,48 @@ export function JobsTable({
   }))
   return (
     <div className="space-y-4.5">
-      <div className="flex flex-col gap-3.5">
-        <div className="md:hidden">
-          <AppSelect
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="min-w-0 w-full">
+          <FilterPills
             label={t('jobs.columns.status')}
             value={list.status}
             options={options}
             onChange={list.setStatus}
           />
         </div>
-        <div
-          className="hidden flex-wrap gap-2.5 md:flex"
-          role="group"
-          aria-label={t('jobs.columns.status')}
+        <Button
+          variant={list.issuesOnly ? 'primary' : 'outline'}
+          aria-pressed={list.issuesOnly}
+          onClick={() => list.setIssuesOnly(!list.issuesOnly)}
         >
-          {options.map((option) => (
-            <Button
-              key={option.value}
-              variant="outline"
-              aria-pressed={list.status === option.value}
-              className={list.status === option.value ? 'border-primary text-primary' : ''}
-              onClick={() => list.setStatus(option.value)}
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          <Input
-            type="search"
-            className="min-w-0 flex-1 rounded-full"
-            aria-label={t('jobs.search')}
-            placeholder={t('jobs.search')}
-            value={list.search}
-            onChange={(event) => list.setSearch(event.target.value)}
-          />
-          <Button
-            variant="outline"
-            aria-label={t('jobs.filter')}
-            aria-pressed={list.issuesOnly}
-            onClick={() => list.setIssuesOnly(!list.issuesOnly)}
-          >
-            <ListFilter aria-hidden="true" className="size-4" />
-          </Button>
-          <Button
-            variant="outline"
-            aria-label={t('jobs.sort')}
-            aria-pressed={list.oldestFirst}
-            onClick={() => list.setOldestFirst(!list.oldestFirst)}
-          >
-            <ArrowDownWideNarrow aria-hidden="true" className="size-4" />
-          </Button>
-        </div>
+          {t('jobs.filter')}
+        </Button>
+        <Input
+          type="search"
+          className="min-w-0 flex-1 rounded-full"
+          aria-label={t('jobs.search')}
+          placeholder={t('jobs.search')}
+          value={list.search}
+          onChange={(event) => list.setSearch(event.target.value)}
+        />
+        <IconButton
+          className="h-control w-13 shrink-0 md:w-10.5"
+          icon={ArrowDownWideNarrow}
+          label={t('jobs.sort')}
+          variant="outline"
+          aria-pressed={list.oldestFirst}
+          onClick={() => list.setOldestFirst(!list.oldestFirst)}
+        />
       </div>
       {error ? (
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       ) : null}
-      <Card className="overflow-hidden p-0" aria-busy={isLoading && !jobs}>
+      <div
+        className="overflow-hidden rounded-card border border-border bg-card"
+        aria-busy={isLoading && !jobs}
+      >
         {isLoading && !jobs ? (
           <ul aria-label={t('jobs.latest')}>
             {Array.from({ length: SKELETON_ROWS }, (_, index) => (
@@ -215,13 +188,11 @@ export function JobsTable({
                 <Button variant="outline" onClick={list.clearFilters}>
                   {t('jobs.clear')}
                 </Button>
-              ) : (
-                <Button onClick={onUpload}>{t('pageStates.upload')}</Button>
-              )
+              ) : null
             }
           />
         )}
-      </Card>
+      </div>
     </div>
   )
 }

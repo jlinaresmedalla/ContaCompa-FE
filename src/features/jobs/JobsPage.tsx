@@ -1,5 +1,3 @@
-import { useRef } from 'react'
-import { Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from '@/components/molecules'
@@ -15,31 +13,14 @@ import { useJobsOverview } from './hooks'
 export function JobsPage() {
   const { t } = useTranslation()
   const jobs = useJobsOverview()
-  const uploadArea = useRef<HTMLDivElement>(null)
   const active = jobs.data ? jobs.data.counts.queued + jobs.data.counts.processing : 0
   const current = jobs.data?.jobs.find((job) => job.status === 'processing')
-  const focusUpload = () => {
-    const button = uploadArea.current?.querySelector('button')
-    button?.scrollIntoView?.({ block: 'center' })
-    button?.focus()
-  }
   return (
     <div className="space-y-7 md:space-y-9">
-      <PageHeader
-        title={t('nav.jobs')}
-        description={t('pageStates.jobs')}
-        actions={
-          <Button onClick={focusUpload}>
-            <Upload aria-hidden="true" className="size-4.5" />
-            {t('jobs.upload')}
-          </Button>
-        }
-      />
+      <PageHeader title={t('nav.jobs')} description={t('pageStates.jobs')} />
       <PausedBanner provider={jobs.data?.provider} />
       <StatusCounts counts={jobs.data?.counts} isLoading={jobs.isLoading} />
-      <div ref={uploadArea}>
-        <UploadDropzone />
-      </div>
+      <UploadDropzone />
       {current ? (
         <Card className="space-y-4.5 bg-foreground text-background" role="status">
           <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:justify-between">
@@ -57,11 +38,11 @@ export function JobsPage() {
         </Card>
       ) : null}
       <section>
-        <CardTitle hint={active > 0 ? t('jobs.refreshing', { count: active }) : t('jobs.idle')}>
-          {t('jobs.latest')}
-        </CardTitle>
+        <CardTitle className="flex-col items-start gap-1">{t('jobs.latest')}</CardTitle>
+        <p className="mb-3 text-xs text-muted-foreground">
+          {active > 0 ? t('jobs.refreshing', { count: active }) : t('jobs.idle')}
+        </p>
         <JobsTable
-          onUpload={focusUpload}
           jobs={jobs.data?.jobs}
           isLoading={jobs.isLoading}
           error={jobs.error ? toApiError(jobs.error).message : null}

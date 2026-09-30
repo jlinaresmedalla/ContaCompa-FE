@@ -24,7 +24,7 @@ export function SignInPage() {
     <div className="relative isolate flex min-h-screen min-w-0 flex-col">
       <Backdrop />
       <PublicHeader signIn />
-      <main className="flex flex-1 items-center justify-center px-[1.125rem] py-7 md:pb-[4.625rem]">
+      <main className="mx-auto flex w-full max-w-[160rem] flex-1 items-center justify-center px-shell-fluid py-7 md:pb-[4.625rem]">
         <Card className="material w-full min-w-0 max-w-[30rem] space-y-7 p-7 md:p-9">
           <div className="space-y-[1.125rem]">
             <span className="flex size-[2.875rem] items-center justify-center rounded-control border border-primary/20 bg-primary/10 text-primary">

@@ -1,9 +1,9 @@
-import { ArrowLeft, Trash2, FileText, Eye, EyeOff, Pencil } from 'lucide-react'
+import { ArrowLeft, FileText, Eye, EyeOff, Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Dialog } from 'radix-ui'
 import { BottomSheet } from '@/components/organisms'
-import { usePhoneWidth } from './use-detail-tabs'
+import { usePhoneWidth } from '@/lib/use-phone-width'
 import { Button } from '@/components/atoms'
 
 import { PATHS } from '@/app/router/paths'
@@ -13,7 +13,8 @@ import { Skeleton, Card, CardTitle } from '@/components/atoms'
 import { dateTime } from '@/lib/format'
 import { toApiError } from '@/lib/http'
 
-import { DetailTabs } from './components/DetailTabs'
+import { DetailSections } from './components/DetailSections'
+import { DeleteDocAction } from './components/DeleteDocAction'
 import { PhoneDetailHeader } from './components/PhoneDetailHeader'
 import { InvoiceCard } from './components/InvoiceCard'
 import { useInvoiceEdit } from './use-invoice-edit'
@@ -36,11 +37,21 @@ const HEADER_SKELETON_COUNT = 12
 
 export function DocumentDetailPage() {
   const { t, i18n } = useTranslation()
-  const { doc, remove, fileIndex, setFileIndex, file, title, confirmDelete } = useDocumentDetail()
+  const {
+    doc,
+    remove,
+    fileIndex,
+    setFileIndex,
+    file,
+    title,
+    confirmDelete,
+    deleteOpen,
+    setDeleteOpen,
+  } = useDocumentDetail()
 
   const phone = usePhoneWidth()
   const edit = useInvoiceEdit(doc.data)
-  const { previewVisible, togglePreview } = usePreviewToggle()
+  const { previewVisible, togglePreview } = usePreviewToggle(phone)
 
   if (doc.error && !doc.data)
     return (
@@ -72,22 +83,21 @@ export function DocumentDetailPage() {
     )
   const data = doc.data
   const locale = i18n.language
-  const Header = phone ? PhoneDetailHeader : PageHeader
+  const Header = PhoneDetailHeader
 
   return (
     <div className={cn('min-w-0 space-y-4', phone && edit.editing && 'pb-[10rem]')}>
       <Header
         title={title}
         description={
-          <>
-            {edit.editing ? (
-              t('detail.editingRecord')
-            ) : (
-              <>
-                {t(`docType.${data.doc_type}`)} · {data.supplier?.legal_name}
-              </>
-            )}
-          </>
+          edit.editing ? (
+            t('detail.editingRecord')
+          ) : (
+            <>
+              {t('detail.processed', { date: dateTime(data.created_at, locale) })} ·{' '}
+              {t('detail.exported', { date: dateTime(data.exported_at, locale) })}
+            </>
+          )
         }
         back={
           <IconButton
@@ -102,7 +112,7 @@ export function DocumentDetailPage() {
         }
         actions={
           <>
-            {!phone ? (
+            {!(phone && edit.editing) ? (
               <IconButton
                 icon={previewVisible ? Eye : EyeOff}
                 label={t(previewVisible ? 'detail.hidePreview' : 'detail.showPreview')}
@@ -123,16 +133,13 @@ export function DocumentDetailPage() {
                 className="max-md:size-[var(--control-touch-height)]"
               />
             )}
-            {!(phone && edit.editing) ? (
-              <IconButton
-                icon={Trash2}
-                label={t('common.delete')}
-                variant="danger"
-                disabled={remove.isPending || edit.editing}
-                className="max-md:size-[var(--control-touch-height)]"
-                onClick={confirmDelete}
-              />
-            ) : null}
+            <DeleteDocAction
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              confirm={confirmDelete}
+              name={title}
+              disabled={remove.isPending || edit.editing}
+            />
           </>
         }
       />
@@ -167,18 +174,15 @@ export function DocumentDetailPage() {
       <div
         className={cn(
           'grid gap-5.5',
-          previewVisible && !phone && 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
+          previewVisible && !phone && 'md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
         )}
       >
         <div className="min-w-0 space-y-5.5">
           <InvoiceCard doc={data} previewVisible={previewVisible} edit={edit} />
-          <p className="text-xs text-muted-foreground">
-            {t('detail.processed', { date: dateTime(data.created_at, locale) })} ·{' '}
-            {t('detail.exported', { date: dateTime(data.exported_at, locale) })}
-          </p>
+          <DetailSections doc={data} />
         </div>
         {previewVisible && !phone ? (
-          <Card className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+          <Card className="min-w-0 max-h-[calc(100dvh-3rem)] overflow-auto md:sticky md:top-6 md:self-start">
             <CardTitle hint={file ? t(`sourceKind.${file.source_kind}`) : undefined}>
               {t('detail.original')}
             </CardTitle>
@@ -201,18 +205,6 @@ export function DocumentDetailPage() {
           </Card>
         ) : null}
       </div>
-      {phone && !edit.editing ? (
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={togglePreview}
-          aria-pressed={previewVisible}
-        >
-          <Eye aria-hidden="true" className="size-4" />
-          {t('detail.showOriginal')}
-        </Button>
-      ) : null}
-      <DetailTabs doc={data} />
       {phone && edit.editing ? (
         <InvoiceEditActions
           edit={edit}

@@ -19,7 +19,7 @@ export const ES_HOME: Pick<Messages, 'home'> = {
       extract: {
         title: 'Extrae los datos',
         description:
-          'Gemini lee el proveedor, RUC, ítems e importes del comprobante y los organiza en un esquema definido.',
+          'AI lee el proveedor, RUC, ítems e importes del comprobante y los organiza en un esquema definido.',
       },
       review: {
         title: 'Revisa las alertas',
@@ -36,19 +36,19 @@ export const ES_HOME: Pick<Messages, 'home'> = {
       service: { title: 'Servicio FastAPI', description: 'API tipada, una transacción' },
       queue: { title: 'Cola en Postgres', description: 'Procesa sin bloquear la solicitud' },
       extraction: {
-        title: 'Extracción con Gemini',
+        title: 'Extracción con AI',
         description: 'Esquema definido y costos registrados',
       },
     },
-    architecture: 'Arquitectura y tecnologías',
+    architecture: 'Tecnologías',
     architectureIntro:
-      'Una interfaz en React, un servicio en FastAPI y una cola de procesamientos en Postgres conectan los archivos con la extracción de Gemini.',
+      'Una interfaz en React, un servicio en FastAPI y una cola de procesamientos en Postgres.',
     architectureAlt:
-      'Arquitectura de Contacompa: panel en React, servicio FastAPI, cola de procesamientos en Postgres y extracción con Gemini, alojados en Cloudflare Pages, Render y Neon.',
+      'Arquitectura de Contacompa: panel en React, servicio FastAPI, cola de procesamientos en Postgres y extracción con AI, alojados en Cloudflare Pages, Render y Neon.',
     stackLabel: 'Tecnologías utilizadas',
     stack: {
       fastapi: 'FastAPI',
-      gemini: 'Gemini',
+      AI: 'AI',
       react: 'React',
       render: 'Render',
       neon: 'Neon',

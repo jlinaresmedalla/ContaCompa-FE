@@ -20,7 +20,7 @@ export function PageHeader({
             {title}
           </h1>
           {description ? (
-            <p className="mt-1 break-words text-sm text-muted-foreground">{description}</p>
+            <div className="mt-1 break-words text-sm text-muted-foreground">{description}</div>
           ) : null}
         </div>
         {actions ? (

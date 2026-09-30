@@ -1,6 +1,4 @@
-import { useTranslation } from 'react-i18next'
-import { Link, Outlet } from 'react-router'
-import { PATHS } from '@/app/router/paths'
+import { Outlet } from 'react-router'
 import { Logo } from '@/components/molecules'
 import { LogoMark } from '@/components/atoms'
 import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/organisms'
@@ -15,7 +13,6 @@ export function AppLayout({ account }: { account: AccountMenuData }) {
   )
 }
 function ShellContent({ account }: { account: AccountMenuData }) {
-  const { t } = useTranslation()
   const { isMobile, collapsed, close } = useShellNavigation()
   return (
     <>
@@ -23,24 +20,21 @@ function ShellContent({ account }: { account: AccountMenuData }) {
         <div
           className={
             collapsed
-              ? 'flex h-shell-header shrink-0 flex-col items-center justify-center'
+              ? 'flex shrink-0 flex-col items-center gap-4 pt-4'
               : 'flex h-shell-header shrink-0 items-center justify-between gap-1 px-3'
           }
         >
-          <Link
-            to={PATHS.home}
-            onClick={close}
-            aria-label={t('pageStates.home')}
-            className="flex min-w-0 max-md:min-h-control items-center rounded-navigation outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {collapsed ? <LogoMark className="size-8 shrink-0 text-primary" /> : <Logo />}
-          </Link>
+          <div className="flex min-w-0 items-center">
+            {collapsed ? <LogoMark className="size-4 shrink-0 text-primary" /> : <Logo />}
+          </div>
           {!isMobile && <SidebarTrigger />}
         </div>
         <SidebarModules collapsed={collapsed} close={close} />
         <div
           className={
-            collapsed ? 'mt-auto border-t border-border p-1' : 'mt-auto border-t border-border p-3'
+            collapsed
+              ? 'mt-auto flex justify-center border-t border-border px-1 py-4'
+              : 'mt-auto border-t border-border p-3'
           }
         >
           <AccountMenu collapsed={collapsed} {...account} />
@@ -50,17 +44,13 @@ function ShellContent({ account }: { account: AccountMenuData }) {
         {isMobile && (
           <header className="flex h-shell-mobile-header items-center justify-between gap-2 border-b border-border material px-shell-phone">
             <SidebarTrigger />
-            <Link
-              to={PATHS.home}
-              aria-label={t('pageStates.home')}
-              className="flex h-control items-center rounded-navigation focus-visible:ring-2 focus-visible:ring-ring"
-            >
+            <div className="flex h-control items-center">
               <Logo />
-            </Link>
+            </div>
             <AccountMenu collapsed {...account} />
           </header>
         )}
-        <main className="min-w-0 max-w-shell-content px-shell-phone pt-shell-top pb-shell-sides md:px-shell-sides [overflow-wrap:anywhere]">
+        <main className="mx-auto w-full min-w-0 max-w-shell-content px-shell-fluid pt-shell-top pb-shell-sides">
           <Outlet />
         </main>
       </div>

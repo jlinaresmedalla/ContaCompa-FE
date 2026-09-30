@@ -64,7 +64,7 @@ test('renders stats and changes the report with the chosen period', async () => 
   fireEvent.keyDown(select, { key: 'ArrowDown' })
   fireEvent.click(await screen.findByRole('option', { name: 'Last 7 days' }))
   await waitFor(() => expect(report).toHaveBeenCalledWith(SHORT_DAYS, expect.any(AbortSignal)))
-  expect(await screen.findByText('$7.0000')).toBeInTheDocument()
+  expect(await screen.findByText('US$ 7.0000')).toBeInTheDocument()
 })
 
 test('offers upload when no costs have been recorded', async () => {
@@ -84,4 +84,52 @@ test('loads the long period from the same select', async () => {
   fireEvent.keyDown(select, { key: 'ArrowDown' })
   fireEvent.click(await screen.findByRole('option', { name: 'Last 90 days' }))
   await waitFor(() => expect(report).toHaveBeenCalledWith(LONG_DAYS, expect.any(AbortSignal)))
+})
+
+test('explains billed and list price in the info tooltip', async () => {
+  vi.spyOn(COST_API, 'report').mockResolvedValue(REPORT)
+  renderPage()
+  const info = await screen.findByRole('button', { name: i18n.t('costs.explanation') })
+  fireEvent.focus(info)
+  expect(await screen.findByRole('tooltip')).toHaveTextContent(i18n.t('costs.explanation'))
+})
+
+test.each(['en', 'es'])(
+  'uses singular purchase doc counts and four decimals in %s',
+  async (language) => {
+    await i18n.changeLanguage(language)
+    const single = { ...LINE, docs: 1 }
+    vi.spyOn(COST_API, 'report').mockResolvedValue({
+      ...REPORT,
+      today: single,
+      month: single,
+      total: single,
+    })
+    renderPage()
+    await screen.findByText('test-model')
+    expect(
+      screen.getAllByText(i18n.t('costs.summary', { count: 1, tokens: '1,500' })).length,
+    ).toBeGreaterThan(0)
+    expect(screen.getAllByText('US$ 0.0000').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('US$ 0.1042').length).toBeGreaterThan(0)
+    expect(
+      screen.getByRole('columnheader', { name: i18n.t('costs.columns.input') }),
+    ).toBeInTheDocument()
+  },
+)
+
+test.each(['en', 'es'])('labels the framed model table with its count in %s', async (language) => {
+  await i18n.changeLanguage(language)
+  vi.spyOn(COST_API, 'report').mockResolvedValue(REPORT)
+  renderPage()
+  await screen.findByText('test-model')
+  expect(
+    screen.getByRole('heading', {
+      name: i18n.t('common.tableSectionCount', {
+        label: i18n.t('costs.byModel'),
+        count: REPORT.by_model.length,
+      }),
+    }),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('table').closest('[data-slot="card"]')).toBeNull()
 })

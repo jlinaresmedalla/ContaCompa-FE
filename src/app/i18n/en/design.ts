@@ -50,7 +50,15 @@ export const EN_DESIGN = {
       organisms: 'Organisms',
       templates: 'Templates',
     },
+    previewSample:
+      'Local sample: hidden and loading preview; no file is requested. Narrow containers stack the sample.',
+    observationSample: 'The printed total differs from the item totals.',
     sections: {
+      MoreActions: 'More actions and confirmation',
+      ModeMenus: 'Language and theme menus',
+      PreviewColumn: 'Observations and preview column',
+      StatRow: 'Stat row',
+      FilterPills: 'Filter pills',
       PageSkeleton: 'Page skeleton',
       ErrorNote: 'Error note',
       Brand: 'Brand',

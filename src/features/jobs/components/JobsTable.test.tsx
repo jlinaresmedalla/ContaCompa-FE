@@ -42,7 +42,7 @@ function renderList(jobs: JobRow[] | undefined, isLoading = false) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter>
-        <JobsTable jobs={jobs} onUpload={vi.fn()} isLoading={isLoading} error={null} />
+        <JobsTable jobs={jobs} isLoading={isLoading} error={null} />
       </MemoryRouter>
     </QueryClientProvider>,
   )
@@ -73,9 +73,10 @@ test('ready and failed files have status, document link and working retry', asyn
   await vi.waitFor(() => expect(retry).toHaveBeenCalledWith('failed'))
 })
 
-test('empty list offers upload and no clear filters action', () => {
+test('empty list describes uploading without a duplicate upload control', () => {
   renderList([])
-  expect(screen.getByRole('button', { name: /Upload/ })).toBeInTheDocument()
+  expect(screen.getByText(i18n.t('pageStates.jobsTitle'))).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Upload|Choose files/ })).toBeNull()
   expect(screen.queryByRole('button', { name: 'Clear filters' })).not.toBeInTheDocument()
 })
 

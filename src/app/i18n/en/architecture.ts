@@ -31,10 +31,10 @@ export const EN_ARCHITECTURE = {
     },
     job: {
       label: 'Extraction job',
-      note: 'The worker claims a job, Gemini extracts it and one transaction writes the result.',
+      note: 'The worker claims a job, AI extracts it and one transaction writes the result.',
       items: [
         'The worker claims a queued job and calls the extraction pipeline.',
-        'The pipeline calls Gemini and records a LangSmith trace.',
+        'The pipeline calls AI and records a LangSmith trace.',
         'Three provider outages pause claiming for 60 seconds, doubling up to 10 minutes; one trial job resumes it.',
       ],
     },
@@ -71,7 +71,7 @@ export const EN_ARCHITECTURE = {
     },
     pipeline: {
       label: 'Pipeline',
-      role: 'Calls Gemini for structured extraction and traces runs in LangSmith.',
+      role: 'Calls AI for structured extraction and traces runs in LangSmith.',
     },
     domain: {
       label: 'Domain',
@@ -85,8 +85,8 @@ export const EN_ARCHITECTURE = {
       label: 'Object storage',
       role: 'Private Neon bucket accessed through the S3 API; files are served through the HTTP API.',
     },
-    gemini: {
-      label: 'Gemini API',
+    AI: {
+      label: 'AI API',
       role: 'Extracts structured purchase document data.',
     },
     langsmith: {

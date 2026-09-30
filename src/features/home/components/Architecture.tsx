@@ -25,17 +25,20 @@ export function Architecture() {
       </h2>
       <p className="mt-1 text-muted-foreground">{t('home.architectureIntro')}</p>
       <Card className="mt-[1.125rem] md:mt-[1.375rem] min-w-0 overflow-hidden">
-        <ArchitectureView />
-      </Card>
-      <ul aria-label={t('home.stackLabel')} className="mt-4 flex flex-wrap gap-2">
-        {(['fastapi', 'postgres', 'gemini', 'react', 'render', 'neon', 'cloudflare'] as const).map(
-          (name) => (
+        {/* <ArchitectureView /> */}
+        <ul
+          aria-label={t('home.stackLabel')}
+          className="flex flex-wrap"
+        >
+          {(
+            ['fastapi', 'postgres', 'AI', 'react', 'render', 'neon', 'cloudflare'] as const
+          ).map((name) => (
             <li key={name}>
-              <Badge>{t(`home.stack.${name}`)}</Badge>
+              <Badge className="border border-border bg-card">{t(`home.stack.${name}`)}</Badge>
             </li>
-          ),
-        )}
-      </ul>
+          ))}
+        </ul>
+      </Card>
     </section>
   )
 }

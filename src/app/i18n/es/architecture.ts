@@ -33,10 +33,10 @@ export const ES_ARCHITECTURE: typeof EN_ARCHITECTURE = {
     },
     job: {
       label: 'Procesamiento de extracción',
-      note: 'El procesador toma un trabajo, Gemini extrae los datos y una transacción guarda el resultado.',
+      note: 'El procesador toma un trabajo, AI extrae los datos y una transacción guarda el resultado.',
       items: [
         'El procesador toma un trabajo de la cola y llama al flujo de extracción.',
-        'El flujo llama a Gemini y registra una traza en LangSmith.',
+        'El flujo llama a AI y registra una traza en LangSmith.',
         'Tres fallas del proveedor pausan la cola por 60 segundos, duplicándose hasta 10 minutos; un trabajo de prueba permite reanudarla.',
       ],
     },
@@ -73,7 +73,7 @@ export const ES_ARCHITECTURE: typeof EN_ARCHITECTURE = {
     },
     pipeline: {
       label: 'Flujo de extracción',
-      role: 'Llama a Gemini para extraer datos estructurados y registra las ejecuciones en LangSmith.',
+      role: 'Llama a AI para extraer datos estructurados y registra las ejecuciones en LangSmith.',
     },
     domain: {
       label: 'Dominio',
@@ -87,8 +87,8 @@ export const ES_ARCHITECTURE: typeof EN_ARCHITECTURE = {
       label: 'Almacenamiento de archivos',
       role: 'Bucket privado de Neon, accesible por la API S3; los archivos se entregan mediante la API HTTP.',
     },
-    gemini: {
-      label: 'API de Gemini',
+    AI: {
+      label: 'API de AI',
       role: 'Extrae los datos estructurados de los comprobantes de compra.',
     },
     langsmith: {

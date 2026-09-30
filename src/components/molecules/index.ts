@@ -8,3 +8,7 @@ export * from './page-header'
 export * from './segmented'
 export * from './stat-card'
 export type { AppSelectOption, AppSelectProps } from './app-select.types'
+export * from './stat-row'
+export * from './filter-pills'
+
+export { TableSectionLabel } from './table-section-label'

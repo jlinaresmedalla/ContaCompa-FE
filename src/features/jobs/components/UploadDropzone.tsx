@@ -1,12 +1,11 @@
 import { Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Badge, type BadgeTone, Button, Card } from '@/components/atoms'
 
 import { cn } from '@/lib/cn'
 
-import { useUploadFiles } from '../hooks'
+import { useUploadDropzone } from '../use-upload-dropzone'
 import type { UploadItem } from '../types'
 
 const ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png'
@@ -19,13 +18,7 @@ const TONE: Record<UploadItem['state'], BadgeTone> = {
 
 export function UploadDropzone() {
   const { t } = useTranslation()
-  const { items, upload, isUploading } = useUploadFiles()
-  const [dragging, setDragging] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const send = (list: FileList | null) => {
-    if (list && list.length > 0) void upload(Array.from(list))
-  }
+  const { items, isUploading, dragging, setDragging, inputRef, send } = useUploadDropzone()
 
   return (
     <Card className="border-dashed p-4.5 md:px-5.5">
@@ -50,10 +43,8 @@ export function UploadDropzone() {
             <Upload aria-hidden="true" className="size-5" />
           </span>
           <div className="min-w-0">
-            <h2 className="font-semibold">{t('jobs.upload')}</h2>
-            <p className="text-xs text-muted-foreground">
-              {t('jobs.drop')} {t('jobs.uploadHint')}
-            </p>
+            <h2 className="font-semibold">{t('jobs.drop')}</h2>
+            <p className="text-xs text-muted-foreground">{t('jobs.uploadHint')}</p>
           </div>
         </div>
         <Button variant="outline" disabled={isUploading} onClick={() => inputRef.current?.click()}>

@@ -7,7 +7,7 @@ import type { PurchaseDocDetail } from './types'
 import { STORAGE_KEYS } from './use-preview-toggle'
 import { DocumentDetailPage } from './DocumentDetailPage'
 
-const MOCKS = vi.hoisted(() => ({ preview: vi.fn() }))
+const MOCKS = vi.hoisted(() => ({ preview: vi.fn(), remove: vi.fn() }))
 const DOC: PurchaseDocDetail = {
   id: 'record-1',
   supplier: { ruc: '20600000005', legal_name: 'Supplier name' },
@@ -28,17 +28,10 @@ const DOC: PurchaseDocDetail = {
   exported_at: null,
   documents: [{ id: 'file-1', filename: 'original.pdf', source_kind: 'pdf_text' }],
 }
-vi.mock('./hooks', () => ({ useCorrectDoc: () => ({ mutateAsync: vi.fn(), isPending: false }) }))
-vi.mock('./use-document-detail', () => ({
-  useDocumentDetail: () => ({
-    doc: { data: DOC },
-    remove: { isPending: false },
-    fileIndex: 0,
-    setFileIndex: vi.fn(),
-    file: DOC.documents[0],
-    title: DOC.doc_number,
-    confirmDelete: vi.fn(),
-  }),
+vi.mock('./hooks', () => ({
+  useCorrectDoc: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  usePurchaseDoc: () => ({ data: DOC }),
+  useDeleteDoc: () => ({ mutate: MOCKS.remove, isPending: false }),
 }))
 vi.mock('./components/FilePreview', () => ({
   FilePreview: () => {
@@ -58,6 +51,7 @@ beforeEach(async () => {
   width()
   localStorage.clear()
   MOCKS.preview.mockClear()
+  MOCKS.remove.mockClear()
   await i18n.changeLanguage('en')
 })
 afterEach(() => {
@@ -65,7 +59,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('defaults to hidden without mounting the file preview and retains the card and tabs', () => {
+test('defaults to hidden without mounting the file preview and retains the invoice and sections', () => {
   renderDetail()
   expect(screen.getByRole('button', { name: 'Show the file preview' })).toHaveAttribute(
     'aria-pressed',
@@ -73,7 +67,13 @@ test('defaults to hidden without mounting the file preview and retains the card 
   )
   expect(MOCKS.preview).not.toHaveBeenCalled()
   expect(screen.getByText('Supplier name')).toBeInTheDocument()
-  expect(screen.getByRole('tab', { name: 'Observations' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Observations' })).toHaveTextContent('No observations')
+  expect(screen.getByRole('region', { name: 'Items' })).toBeInTheDocument()
+  const history = screen.getByText('Correction history').closest('details')!
+  expect(history).not.toHaveAttribute('open')
+  fireEvent.click(screen.getByText('Correction history'))
+  expect(history).toHaveAttribute('open')
+  expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
 })
 
@@ -135,10 +135,10 @@ function width(phone = false) {
   )
 }
 
-test('phone tabs use a select and editing shows a fixed bottom bar with counts and Save', async () => {
+test('phone sections stay visible and editing shows a fixed bottom bar with counts and Save', () => {
   width(true)
   renderDetail()
-  expect(await screen.findByRole('combobox', { name: 'Detail view' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Items' })).toBeInTheDocument()
   expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Edit purchase doc' }))
   const bar = screen.getByRole('status', { name: i18n.t('detail.unsavedTitle') })
@@ -172,12 +172,30 @@ test('the phone bar eye opens the file sheet, closing retains drafts, and Cancel
   expect(screen.getByLabelText('Supplier')).toHaveValue('Supplier name')
 })
 
-test('Show original file opens a phone sheet and the stored choice survives a remount', async () => {
+test('phone ignores a stored shown choice until the eye is tapped, including on remount', async () => {
   width(true)
+  localStorage.setItem(STORAGE_KEYS.previewVisible, 'true')
   const view = renderDetail()
-  fireEvent.click(screen.getByRole('button', { name: 'Show original file' }))
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  expect(MOCKS.preview).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Show the file preview' }))
   expect(await screen.findByRole('dialog', { name: 'Original file' })).toBeInTheDocument()
   view.unmount()
   renderDetail()
-  expect(await screen.findByRole('dialog', { name: 'Original file' })).toBeInTheDocument()
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+})
+
+test('delete opens confirmation, Cancel keeps the doc, and confirmation calls delete', async () => {
+  renderDetail()
+  fireEvent.keyDown(screen.getByRole('button', { name: 'More actions' }), { key: 'ArrowDown' })
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }))
+  const dialog = screen.getByRole('dialog', { name: 'Delete purchase doc?' })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+  expect(MOCKS.remove).not.toHaveBeenCalled()
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  fireEvent.keyDown(screen.getByRole('button', { name: 'More actions' }), { key: 'ArrowDown' })
+  fireEvent.click(await screen.findByRole('menuitem', { name: 'Delete' }))
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Delete' }))
+  expect(MOCKS.remove).toHaveBeenCalledOnce()
+  expect(MOCKS.remove.mock.calls[0]?.[0]).toBe(DOC.id)
 })

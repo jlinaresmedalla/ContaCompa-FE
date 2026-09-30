@@ -1,5 +1,7 @@
 export const EN_DOCUMENTS = {
   documents: {
+    observationCount_one: '{{count}} observation',
+    observationCount_other: '{{count}} observations',
     filters: {
       all: 'All',
       warning: 'With warnings',
@@ -34,6 +36,15 @@ export const EN_DOCUMENTS = {
     },
   },
   prices: {
+    short: {
+      quantity: 'Qty',
+      unit: 'Unit',
+      description: 'Description',
+      unitWith: 'Unit price incl. IGV',
+      totalWith: 'Amount incl. IGV',
+      unitWithout: 'Unit price excl. IGV',
+      totalWithout: 'Amount excl. IGV',
+    },
     printed: 'Printed',
     printedWith: 'Printed prices include IGV',
     printedWithout: 'Printed prices exclude IGV',
@@ -80,8 +91,12 @@ export const EN_DOCUMENTS = {
     other: 'Other',
   },
   detail: {
-    derivedPrices:
-      'Printed columns are bold. The server derives the other prices after saving; they cannot be edited.',
+    units: { unit: 'Unit', kg: 'Kilogram', g: 'Gram', l: 'Litre', m: 'Metre' },
+    items: 'Items',
+    moreActions: 'More actions',
+    deleteTitle: 'Delete purchase doc?',
+    issueDate: 'Issue date',
+    derivedPrices: 'Printed values are bold; other prices are calculated.',
     historyColumns: { field: 'Field', before: 'Before', after: 'After', changed: 'Changed' },
     editingRecord: 'Editing purchase doc details',
     changed: 'Changed',

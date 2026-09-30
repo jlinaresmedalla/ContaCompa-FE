@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
@@ -7,13 +7,15 @@ import { PATHS } from '@/app/router/paths'
 import { PublicLayout } from '@/components/templates'
 import { API_KEY_STORE } from '@/lib/api-key'
 import { http } from '@/lib/http'
+import { applyTheme } from '@/lib/theme'
 
 import { HomePage } from './HomePage'
 
-const APP_LINK_COUNT = 2
+const APP_LINK_COUNT = 1
 
 beforeEach(() => {
   localStorage.clear()
+  applyTheme('system')
   void i18n.changeLanguage('en')
 })
 
@@ -46,6 +48,9 @@ test.each([null, 'stored-key'])('Home uses only storage with key %s', async (key
   )
   const buttons = screen.getAllByRole('link', { name: 'Go to app →' })
   expect(buttons).toHaveLength(APP_LINK_COUNT)
+  expect(within(screen.getByRole('banner')).getByRole('link', { name: 'Go to app →' })).toBe(
+    buttons[0],
+  )
   for (const button of buttons) {
     expect(button).toHaveAttribute('href', key ? PATHS.purchaseDocs : PATHS.signIn)
   }
@@ -55,7 +60,7 @@ test.each([null, 'stored-key'])('Home uses only storage with key %s', async (key
   expect(fetch).not.toHaveBeenCalled()
 })
 
-test('both main buttons follow a key removed by another tab', () => {
+test('the top-bar button follows a key removed by another tab', () => {
   API_KEY_STORE.set('stored-key')
   renderHome()
   act(() => {
@@ -68,7 +73,7 @@ test('both main buttons follow a key removed by another tab', () => {
   }
 })
 
-test('both main buttons use native Spanish copy', async () => {
+test('the top-bar button uses native Spanish copy', async () => {
   await i18n.changeLanguage('es')
   renderHome()
   expect(screen.getAllByRole('link', { name: 'Ir a la app →' })).toHaveLength(APP_LINK_COUNT)
@@ -76,11 +81,13 @@ test('both main buttons use native Spanish copy', async () => {
 
 test('the public bar changes theme and language with icon controls', async () => {
   renderHome()
-  const dark = screen.getByRole('radio', { name: 'Dark' })
+  fireEvent.keyDown(await screen.findByRole('button', { name: 'Theme: System' }), { key: 'Enter' })
+  const dark = await screen.findByRole('menuitemradio', { name: 'Dark' })
   expect(dark.querySelector('svg')).toBeInTheDocument()
   fireEvent.click(dark)
   expect(document.documentElement.dataset.theme).toBe('dark')
-  fireEvent.click(screen.getByRole('button', { name: 'Spanish' }))
+  fireEvent.keyDown(screen.getByRole('button', { name: 'Language: English' }), { key: 'Enter' })
+  fireEvent.click(await screen.findByRole('menuitemradio', { name: /Spanish/ }))
   await waitFor(() => expect(i18n.language).toBe('es'))
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Tus comprobantes,')
 })

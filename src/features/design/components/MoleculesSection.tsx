@@ -7,6 +7,8 @@ import {
   Logo,
   IconButton,
   Stat,
+  StatRow,
+  FilterPills,
   EmptyState,
   Field,
   PageHeader,
@@ -109,6 +111,32 @@ export function MoleculesSection() {
           <Stat label={t('design.sample')} value="42" sub={t('design.normal')} />
           <Stat label={t('design.sample')} value="0" />
         </div>
+      </DesignSection>
+      <DesignSection name="StatRow">
+        {(['w-full', 'max-w-sm'] as const).map((width) => (
+          <div key={width} className={width}>
+            <StatRow>
+              {(['invoice', 'sales_receipt', 'credit_note'] as const).map((type) => (
+                <Stat key={type} label={t(`docType.${type}`)} value="42" />
+              ))}
+            </StatRow>
+          </div>
+        ))}
+      </DesignSection>
+      <DesignSection name="FilterPills">
+        {(['w-full', 'max-w-xs'] as const).map((width) => (
+          <div key={width} className={width}>
+            <FilterPills
+              label={t('detail.fields.doc_type')}
+              value={selected}
+              onChange={setSelected}
+              options={(['invoice', 'sales_receipt', 'credit_note'] as const).map((value) => ({
+                value,
+                label: t(`docType.${value}`),
+              }))}
+            />
+          </div>
+        ))}
       </DesignSection>
       <DesignSection name="Segmented">
         <Segmented

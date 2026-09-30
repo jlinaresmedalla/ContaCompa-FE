@@ -10,6 +10,7 @@ import {
 } from './dropdown-menu'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/atoms'
 import { cn } from '@/lib/cn'
+import { useRailMenu } from './use-rail-menu'
 
 export const SIDEBAR_ITEM =
   'flex w-full min-h-navigation max-md:min-h-control items-center gap-3 rounded-navigation px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring'
@@ -47,7 +48,7 @@ export function SidebarModules({ collapsed, close }: { collapsed: boolean; close
     <TooltipProvider>
       <nav
         aria-label={t('nav.main')}
-        className={cn('flex flex-col gap-5', collapsed ? 'px-1' : 'px-3')}
+        className={cn('flex flex-col gap-4', collapsed ? 'px-1' : 'px-3')}
       >
         {VISIBLE_MODULES.map((module) => {
           const label = t(module.labelKey)
@@ -61,36 +62,19 @@ export function SidebarModules({ collapsed, close }: { collapsed: boolean; close
           )
           if (collapsed)
             return (
-              <Tooltip key={module.id}>
-                {module.pages.length > 1 ? (
-                  <DropdownMenu>
-                    <TooltipTrigger asChild>
-                      <DropdownMenuTrigger aria-label={label} className={itemClass}>
-                        {module.icon}
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <DropdownMenuContent side="right">
-                      <SidebarPageMenu module={module} close={close} />
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <TooltipTrigger asChild>
-                    <Link
-                      to={module.pages[0]?.to ?? module.prefix}
-                      aria-label={label}
-                      aria-current={active ? 'page' : undefined}
-                      className={itemClass}
-                    >
-                      {module.icon}
-                    </Link>
-                  </TooltipTrigger>
-                )}
-                <TooltipContent side="right">{label}</TooltipContent>
-              </Tooltip>
+              <RailModule
+                key={module.id}
+                module={module}
+                label={label}
+                active={active}
+                itemClass={itemClass}
+                close={close}
+              />
             )
+
           return (
             <div key={module.id}>
-              <div className="px-3 py-1 text-sm font-medium text-muted-foreground">{label}</div>
+              <div className="px-3 py-1 text-sm font-medium text-foreground">{label}</div>
               <div className="mt-1">
                 <SidebarPages module={module} close={close} />
               </div>
@@ -103,15 +87,63 @@ export function SidebarModules({ collapsed, close }: { collapsed: boolean; close
 }
 function SidebarPageMenu({ module, close }: { module: AppModule; close: () => void }) {
   const { t } = useTranslation()
-  return module.pages.map((page) => (
-    <DropdownMenuItem key={page.to} asChild>
-      <NavLink
-        to={page.to}
-        onClick={close}
-        className="aria-[current=page]:bg-muted aria-[current=page]:font-semibold"
-      >
-        {t(page.labelKey)}
-      </NavLink>
-    </DropdownMenuItem>
-  ))
+  return module.pages.map((page) => {
+    const Icon = PAGE_ICONS[page.labelKey as keyof typeof PAGE_ICONS]
+    return (
+      <DropdownMenuItem key={page.to} asChild>
+        <NavLink
+          to={page.to}
+          onClick={close}
+          className="aria-[current=page]:bg-muted aria-[current=page]:font-semibold"
+        >
+          {Icon && <Icon className="mr-2 size-4" aria-hidden="true" />}
+          {t(page.labelKey)}
+        </NavLink>
+      </DropdownMenuItem>
+    )
+  })
+}
+
+function RailModule({
+  module,
+  label,
+  active,
+  itemClass,
+  close,
+}: {
+  module: AppModule
+  label: string
+  active: boolean
+  itemClass: string
+  close: () => void
+}) {
+  const { menuOpen, tooltipOpen, setTooltipOpen, onMenuChange } = useRailMenu()
+  return (
+    <Tooltip open={tooltipOpen && !menuOpen} onOpenChange={setTooltipOpen}>
+      {module.pages.length > 1 ? (
+        <DropdownMenu open={menuOpen} onOpenChange={onMenuChange}>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger aria-label={label} className={itemClass}>
+              {module.icon}
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <DropdownMenuContent side="right">
+            <SidebarPageMenu module={module} close={close} />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <TooltipTrigger asChild>
+          <Link
+            to={module.pages[0]?.to ?? module.prefix}
+            aria-label={label}
+            aria-current={active ? 'page' : undefined}
+            className={itemClass}
+          >
+            {module.icon}
+          </Link>
+        </TooltipTrigger>
+      )}
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  )
 }

@@ -16,7 +16,7 @@ export const EN_HOME = {
       },
       extract: {
         title: 'Extract',
-        description: 'Gemini reads supplier, RUC, lines and totals into a strict schema.',
+        description: 'AI reads supplier, RUC, lines and totals into a strict schema.',
       },
       review: {
         title: 'Review',
@@ -28,17 +28,17 @@ export const EN_HOME = {
       interface: { title: 'React interface', description: 'Upload, review, export' },
       service: { title: 'FastAPI service', description: 'Typed API, one transaction' },
       queue: { title: 'Postgres job queue', description: 'Long work runs off the request' },
-      extraction: { title: 'Gemini extraction', description: 'Strict schema, measured cost' },
+      extraction: { title: 'AI extraction', description: 'Strict schema, measured cost' },
     },
     architecture: 'Architecture and stack',
     architectureIntro:
-      'A React interface, a FastAPI service and a Postgres job queue connect uploads to Gemini extraction.',
+      'A React interface, a FastAPI service and a Postgres job queue connect uploads to AI extraction.',
     architectureAlt:
-      'Contacompa architecture: React dashboard, FastAPI service, Postgres job queue and Gemini extraction, hosted on Cloudflare Pages, Render and Neon.',
+      'Contacompa architecture: React dashboard, FastAPI service, Postgres job queue and AI extraction, hosted on Cloudflare Pages, Render and Neon.',
     stackLabel: 'Technology stack',
     stack: {
       fastapi: 'FastAPI',
-      gemini: 'Gemini',
+      AI: 'AI',
       react: 'React',
       render: 'Render',
       neon: 'Neon',

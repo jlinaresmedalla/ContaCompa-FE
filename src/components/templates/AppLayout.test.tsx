@@ -109,7 +109,7 @@ test.each(TABLET_DRAWER_WIDTHS)('uses the drawer and branded top bar at %i px', 
   vi.stubGlobal('innerWidth', width)
   renderLayout()
   const trigger = screen.getByRole('button', { name: 'Open menu' })
-  expect(trigger.closest('header')).toContainElement(screen.getByRole('link', { name: 'Home' }))
+  expect(trigger.closest('header')).toContainElement(screen.getByText('Contacompa'))
   expect(trigger.closest('header')).toContainElement(
     screen.getByRole('button', { name: 'Company account' }),
   )
@@ -124,4 +124,53 @@ test('uses the persistent desktop sidebar at the 1024 px boundary', () => {
   renderLayout()
   expect(screen.getByRole('complementary')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Open menu' })).toBeNull()
+})
+
+const FORCED_RAIL_WIDTH_PX = 1100
+function resize(width: number) {
+  act(() => {
+    vi.stubGlobal('innerWidth', width)
+    window.dispatchEvent(new Event('resize'))
+  })
+}
+test('forced rail preserves expanded preference and restores it at 1280 px', () => {
+  localStorage.setItem('contacompa.sidebar.expanded', 'true')
+  vi.stubGlobal('innerWidth', FORCED_RAIL_WIDTH_PX)
+  renderLayout()
+  expect(screen.getByRole('complementary')).toHaveAttribute('data-state', 'collapsed')
+  expect(screen.getByRole('button', { name: 'Expand sidebar' })).toBeDisabled()
+  expect(localStorage.getItem('contacompa.sidebar.expanded')).toBe('true')
+  resize(DESKTOP_WIDTH_PX)
+  expect(screen.getByRole('complementary')).toHaveAttribute('data-state', 'expanded')
+})
+test('collapsed preference survives forced rail and a drawer round trip', () => {
+  renderLayout()
+  fireEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }))
+  resize(FORCED_RAIL_WIDTH_PX)
+  resize(DESKTOP_WIDTH_PX)
+  expect(screen.getByRole('complementary')).toHaveAttribute('data-state', 'collapsed')
+  resize(LAST_DRAWER_WIDTH_PX)
+  fireEvent.click(screen.getByRole('button', { name: 'Open menu' }))
+  expect(screen.getByRole('dialog')).toBeInTheDocument()
+  resize(DESKTOP_WIDTH_PX)
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(screen.getByRole('complementary')).toHaveAttribute('data-state', 'collapsed')
+  expect(localStorage.getItem('contacompa.sidebar.expanded')).toBe('false')
+})
+
+const PHONE_LOGO_WIDTH_PX = 375
+const LOGO_WIDTHS_PX = [PHONE_LOGO_WIDTH_PX, FORCED_RAIL_WIDTH_PX, DESKTOP_WIDTH_PX]
+test.each(LOGO_WIDTHS_PX)('private logo is static at %i px', (width) => {
+  vi.stubGlobal('innerWidth', width)
+  renderLayout()
+  expect(screen.queryByRole('link', { name: 'Home' })).toBeNull()
+  const shell =
+    width === FORCED_RAIL_WIDTH_PX
+      ? screen.getByRole('complementary')
+      : screen.getByText('Contacompa').parentElement!
+  const mark = shell.querySelector('svg')!
+  expect(mark.closest('a, button, [role="link"], [role="button"], [tabindex]')).toBeNull()
+  if (width !== FORCED_RAIL_WIDTH_PX) {
+    expect(screen.getByText('Contacompa').closest('a, button, [tabindex]')).toBeNull()
+  }
 })

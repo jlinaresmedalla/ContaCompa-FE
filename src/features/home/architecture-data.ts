@@ -54,8 +54,8 @@ export const ARCHITECTURE = {
       {
         id: 'job',
         label: 'Extraction job (worker)',
-        focus: ['worker', 'services', 'pipeline', 'domain', 'gemini', 'postgres'],
-        note: 'Worker claims a job, pipeline calls Gemini, one transaction writes the result. A breaker pauses claiming during Gemini outages (ADR 0021).',
+        focus: ['worker', 'services', 'pipeline', 'domain', 'AI', 'postgres'],
+        note: 'Worker claims a job, pipeline calls AI, one transaction writes the result. A breaker pauses claiming during AI outages (ADR 0021).',
       },
       {
         id: 'core',
@@ -141,9 +141,9 @@ export const ARCHITECTURE = {
       tag: 'private',
     },
     {
-      id: 'gemini',
+      id: 'AI',
       type: 'cloud',
-      label: 'Gemini API',
+      label: 'AI API',
       sublabel: 'infrastructure/providers/',
       pos: [1000, 410],
       size: [170, 64],
@@ -183,7 +183,7 @@ export const ARCHITECTURE = {
     { id: 'extract', from: 'services', to: 'pipeline', label: 'extract', labelAt: [625, 330] },
     { id: 'rules', from: 'services', to: 'domain', label: 'checks' },
     { id: 'schema', from: 'pipeline', to: 'domain', label: 'schema' },
-    { id: 'llm', from: 'pipeline', to: 'gemini', label: 'structured output' },
+    { id: 'llm', from: 'pipeline', to: 'AI', label: 'structured output' },
     {
       id: 'llm-trace',
       from: 'pipeline',

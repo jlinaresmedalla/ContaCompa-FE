@@ -20,6 +20,10 @@ import {
 
 import { cn } from '@/lib/cn'
 
+function columnLayout(meta: unknown) {
+  return (meta as { layout?: 'text' | 'numeric' | 'actions' } | undefined)?.layout
+}
+
 const SKELETON_ROW_COUNT = 5
 
 type DataTableProps<T> = {
@@ -56,7 +60,7 @@ export function DataTable<T>({
   const rows = table.getRowModel().rows
   const width = table.getVisibleLeafColumns().length
   return (
-    <div className="max-w-full min-w-0 rounded-lg border border-border bg-card">
+    <>
       <Table className="w-full text-sm">
         <TableHeader className="border-b border-border bg-muted text-left text-xs text-muted-foreground">
           {table.getHeaderGroups().map((group) => (
@@ -64,8 +68,17 @@ export function DataTable<T>({
               {group.headers.map((header, index) => (
                 <TableHead
                   key={header.id}
+                  data-column={columnLayout(header.column.columnDef.meta)}
+                  style={{
+                    textAlign:
+                      columnLayout(header.column.columnDef.meta) === 'numeric'
+                        ? 'right'
+                        : columnLayout(header.column.columnDef.meta) === 'actions'
+                          ? 'center'
+                          : 'left',
+                  }}
                   className={cn(
-                    'px-3 py-2 font-semibold whitespace-nowrap text-muted-foreground',
+                    'min-w-[4rem] px-3 py-1.5 font-semibold whitespace-normal break-normal text-muted-foreground',
                     index === 0 && 'sticky left-0 z-10 border-r border-border bg-muted',
                   )}
                 >
@@ -82,8 +95,9 @@ export function DataTable<T>({
                 {table.getVisibleLeafColumns().map((column, index) => (
                   <TableCell
                     key={column.id}
+                    data-column={columnLayout(column.columnDef.meta)}
                     className={cn(
-                      'px-3 py-3',
+                      'min-w-[4rem] px-3 py-1.5',
                       index === 0 &&
                         'sticky left-0 z-10 border-r border-border bg-card group-hover:bg-muted',
                     )}
@@ -111,8 +125,17 @@ export function DataTable<T>({
                   {row.getVisibleCells().map((cell, index) => (
                     <TableCell
                       key={cell.id}
+                      data-column={columnLayout(cell.column.columnDef.meta)}
+                      style={{
+                        textAlign:
+                          columnLayout(cell.column.columnDef.meta) === 'numeric'
+                            ? 'right'
+                            : columnLayout(cell.column.columnDef.meta) === 'actions'
+                              ? 'center'
+                              : 'left',
+                      }}
                       className={cn(
-                        'px-3 py-2 align-top whitespace-normal',
+                        'min-w-[4rem] px-3 py-1.5 align-middle whitespace-normal break-normal [overflow-wrap:normal]',
                         index === 0 &&
                           'sticky left-0 z-10 border-r border-border bg-card group-hover:bg-muted',
                         index === 0 && row.getIsExpanded() && 'bg-muted',
@@ -124,7 +147,7 @@ export function DataTable<T>({
                 </TableRow>
                 {row.getIsExpanded() && renderSubRow ? (
                   <TableRow className="border-b border-border bg-background">
-                    <TableCell colSpan={width} className="px-3 py-3 whitespace-normal">
+                    <TableCell colSpan={width} className="px-3 py-1.5 whitespace-normal">
                       {renderSubRow(row)}
                     </TableCell>
                   </TableRow>
@@ -134,6 +157,6 @@ export function DataTable<T>({
           )}
         </TableBody>
       </Table>
-    </div>
+    </>
   )
 }

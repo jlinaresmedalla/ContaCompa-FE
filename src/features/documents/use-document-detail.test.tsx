@@ -37,23 +37,21 @@ test('selects a file and falls back to the first file for an unavailable selecti
 })
 
 test('deletes the confirmed document and navigates only after success', () => {
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
   const { result } = renderHook(useDocumentDetail)
   act(() => result.current.confirmDelete())
-  expect(confirm).toHaveBeenCalledWith(expect.stringContaining('F001-123'))
   expect(MOCKS.mutate).toHaveBeenCalledOnce()
   expect(MOCKS.mutate.mock.calls[0]?.[0]).toBe('doc-1')
   expect(MOCKS.navigate).not.toHaveBeenCalled()
   act(() => MOCKS.mutate.mock.calls[0]![1].onSuccess())
   expect(MOCKS.navigate).toHaveBeenCalledWith(PATHS.purchaseDocs)
-  confirm.mockRestore()
 })
 
 test('does not delete or navigate when confirmation is cancelled', () => {
-  const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
   const { result } = renderHook(useDocumentDetail)
-  act(() => result.current.confirmDelete())
+  act(() => result.current.setDeleteOpen(true))
+  expect(result.current.deleteOpen).toBe(true)
+  act(() => result.current.setDeleteOpen(false))
+  expect(result.current.deleteOpen).toBe(false)
   expect(MOCKS.mutate).not.toHaveBeenCalled()
   expect(MOCKS.navigate).not.toHaveBeenCalled()
-  confirm.mockRestore()
 })

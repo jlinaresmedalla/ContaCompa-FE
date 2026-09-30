@@ -11,7 +11,8 @@ export const ES_JOBS: Pick<Messages, 'jobs' | 'jobStatus' | 'jobStatusHint'> = {
     clear: 'Limpiar filtros',
     inProgress: 'En curso',
     viewJob: 'Ver procesamiento',
-    attempts: '{{count}} intentos',
+    attempts_one: '{{count}} intento',
+    attempts_other: '{{count}} intentos',
     details: 'Detalle del procesamiento',
     progressHint: 'El estado se actualiza automáticamente.',
 
@@ -20,7 +21,7 @@ export const ES_JOBS: Pick<Messages, 'jobs' | 'jobStatus' | 'jobStatusHint'> = {
     pausedNext: ' Próximo intento: {{time}} (hora local).',
     upload: 'Subir archivos',
     uploadHint: 'PDF, JPG o PNG · el servidor define el tamaño máximo',
-    drop: 'Arrastra los archivos aquí o',
+    drop: 'Arrastra archivos aquí o elígelos',
     choose: 'Elegir archivos',
     uploading: 'Subiendo…',
     chooseLabel: 'Elegir archivos para subir',
@@ -55,7 +56,7 @@ export const ES_JOBS: Pick<Messages, 'jobs' | 'jobStatus' | 'jobStatusHint'> = {
   },
   jobStatusHint: {
     queued: 'Esperando para iniciar',
-    processing: 'Gemini está leyendo el archivo',
+    processing: 'AI está leyendo el archivo',
     done: 'Comprobante creado',
     failed: 'Se reintentará automáticamente',
     dead: 'Se agotaron los reintentos',

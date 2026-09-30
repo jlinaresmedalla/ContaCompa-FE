@@ -1,7 +1,7 @@
 import { Globe, Monitor, Moon, Sun } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { LANGUAGES, setLanguage } from '@/app/i18n'
-import { IconButton } from '@/components/molecules'
+import { Button } from '@/components/atoms'
 import { THEMES } from '@/lib/theme'
 import { useThemeSwitch } from './use-theme-switch'
 import {
@@ -14,18 +14,22 @@ import {
 
 const THEME_ICONS = { light: Sun, dark: Moon, system: Monitor }
 
-export function PublicPhonePreferences() {
+export function PreferenceMenus() {
   const { t, i18n } = useTranslation()
   const { theme, setTheme } = useThemeSwitch()
+  const ThemeIcon = THEME_ICONS[theme]
   return (
-    <div className="flex gap-1 md:hidden">
+    <div className="flex items-center gap-1">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <IconButton
-            icon={Globe}
-            label={`${t('sidebar.language')}: ${t(`sidebar.${i18n.language === 'es' ? 'es' : 'en'}`)}`}
-            className="size-[3.25rem] rounded-control"
-          />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`${t('sidebar.language')}: ${t(`sidebar.${i18n.language === 'es' ? 'es' : 'en'}`)}`}
+            className="max-md:size-[3.25rem] rounded-control"
+          >
+            <Globe className="size-4" aria-hidden="true" />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuRadioGroup
@@ -45,11 +49,14 @@ export function PublicPhonePreferences() {
       </DropdownMenu>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <IconButton
-            icon={THEME_ICONS[theme]}
-            label={`${t('sidebar.theme')}: ${t(`sidebar.${theme}`)}`}
-            className="size-[3.25rem] rounded-control"
-          />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`${t('sidebar.theme')}: ${t(`sidebar.${theme}`)}`}
+            className="max-md:size-[3.25rem] rounded-control"
+          >
+            <ThemeIcon className="size-4" aria-hidden="true" />
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuRadioGroup
@@ -74,3 +81,5 @@ export function PublicPhonePreferences() {
     </div>
   )
 }
+
+export const PublicPhonePreferences = PreferenceMenus

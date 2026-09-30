@@ -1,5 +1,5 @@
 import { usePinchZoom } from '../use-pinch-zoom'
-import { usePhoneWidth } from '../use-detail-tabs'
+import { usePhoneWidth } from '@/lib/use-phone-width'
 import { ErrorNote } from '@/components/molecules'
 import { toApiError } from '@/lib/http'
 

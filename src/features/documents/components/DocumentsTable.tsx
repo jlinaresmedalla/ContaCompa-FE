@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { PATHS } from '@/app/router/paths'
+import { Badge } from '@/components/atoms'
 import { IconButton } from '@/components/molecules'
 import { DataTable } from '@/components/organisms'
-import { money } from '@/lib/format'
+import { formatTotal } from '@/lib/money-format'
 
 import { useDeleteDoc } from '../hooks'
 import type { PurchaseDocSummary } from '../types'
-import { IssueBadges } from './IssueBadges'
 import { LinePrices } from './LinePrices'
 
 function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
@@ -22,7 +22,8 @@ function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
     <IconButton
       icon={Trash2}
       label={t('common.delete')}
-      variant="ghost"
+      variant="outline"
+      size="row"
       className="text-destructive"
       disabled={remove.isPending}
       onClick={() => {
@@ -35,7 +36,7 @@ function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {
 
 function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
   const amount = (value: string | null, currency: string | null) => (
-    <span className="whitespace-nowrap tabular-nums">{money(value, currency ?? 'PEN')}</span>
+    <span className="whitespace-nowrap tabular-nums">{formatTotal(value, currency ?? 'PEN')}</span>
   )
   return [
     {
@@ -44,7 +45,7 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
       cell: ({ row }) => (
         <Link
           to={PATHS.purchaseDoc(row.original.id)}
-          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none font-medium whitespace-nowrap text-primary hover:underline"
+          className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none font-medium whitespace-nowrap text-foreground hover:underline"
         >
           {row.original.doc_number ?? '?'}
         </Link>
@@ -52,6 +53,7 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
     },
     {
       header: t('documents.columns.supplier'),
+      meta: { layout: 'text' },
       cell: ({ row }) => (
         <div>
           <div>{row.original.supplier?.legal_name ?? '—'}</div>
@@ -73,16 +75,19 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
     },
     {
       id: 'taxable',
+      meta: { layout: 'numeric' },
       header: t('documents.columns.taxable'),
       cell: ({ row }) => amount(row.original.taxable_amount, row.original.currency),
     },
     {
       id: 'igv',
+      meta: { layout: 'numeric' },
       header: t('documents.columns.igv'),
       cell: ({ row }) => amount(row.original.igv_amount, row.original.currency),
     },
     {
       id: 'totalWithIgv',
+      meta: { layout: 'numeric' },
       header: t('documents.columns.totalWithIgv'),
       cell: ({ row }) => (
         <span className="font-semibold">
@@ -92,28 +97,40 @@ function buildColumns(t: TFunction): ColumnDef<PurchaseDocSummary, unknown>[] {
     },
     {
       header: t('documents.columns.observations'),
-      cell: ({ row }) => <IssueBadges issues={row.original.issues} />,
-    },
-    {
-      id: 'expand',
-      header: t('documents.columns.lines'),
       cell: ({ row }) => (
-        <IconButton
-          icon={ChevronRight}
-          label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
-          variant="ghost"
-          onClick={row.getToggleExpandedHandler()}
-          aria-expanded={row.getIsExpanded()}
-          className={row.getIsExpanded() ? '[&_svg]:rotate-90' : undefined}
-        />
+        <Badge
+          tone={
+            row.original.has_warnings ? 'warning' : row.original.issues.length ? 'info' : 'success'
+          }
+        >
+          {row.original.issues.length
+            ? t('documents.observationCount', { count: row.original.issues.length })
+            : t('common.clean')}
+        </Badge>
       ),
     },
     {
       id: 'actions',
+      meta: { layout: 'actions' },
       header: t('documents.columns.actions'),
       cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <IconButton asChild icon={ExternalLink} label={t('common.open')} variant="outline">
+        <div className="flex items-center justify-center gap-1">
+          <IconButton
+            size="row"
+            icon={ChevronRight}
+            label={row.getIsExpanded() ? t('prices.collapse') : t('prices.expand')}
+            variant="outline"
+            onClick={row.getToggleExpandedHandler()}
+            aria-expanded={row.getIsExpanded()}
+            className={row.getIsExpanded() ? '[&_svg]:rotate-90' : undefined}
+          />
+          <IconButton
+            size="row"
+            asChild
+            icon={ExternalLink}
+            label={t('common.open')}
+            variant="outline"
+          >
             <Link to={PATHS.purchaseDoc(row.original.id)}>{t('common.open')}</Link>
           </IconButton>
           <DeleteButton doc={row.original} />
@@ -132,7 +149,7 @@ export function DocumentsTable(props: {
   const { t } = useTranslation()
   const columns = useMemo(() => buildColumns(t), [t])
   return (
-    <div className="min-w-0 [&_button]:min-h-13 [&_button]:min-w-13 md:[&_button]:min-h-0 md:[&_button]:min-w-0 [&>div]:rounded-card [&_th:nth-child(5)]:text-right [&_th:nth-child(6)]:text-right [&_th:nth-child(7)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(7)]:text-right [&_th:last-child]:text-right">
+    <div className="min-w-0 [&_button]:min-h-13 [&_button]:min-w-13 md:[&_button]:min-h-0 md:[&_button]:min-w-0 [&>div]:rounded-card [&_th:nth-child(5)]:text-right [&_th:nth-child(6)]:text-right [&_th:nth-child(7)]:text-right [&_td:nth-child(5)]:text-right [&_td:nth-child(6)]:text-right [&_td:nth-child(7)]:text-right [&_th:last-child]:text-right [&_td]:align-middle">
       <DataTable
         columns={columns}
         data={props.docs}

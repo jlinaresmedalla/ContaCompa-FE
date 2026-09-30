@@ -1,11 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
 
 import type { PurchaseDocDetail } from '../types'
 import { LinesTable } from './LinesTable'
-import { DetailTabs } from './DetailTabs'
+import { DetailSections } from './DetailSections'
 
 const correct = vi.hoisted(() => vi.fn())
 vi.mock('../hooks', () => ({
@@ -83,10 +83,9 @@ test('submits only edited line values in the existing PATCH shape', async () => 
 })
 
 test('shows both prices and marks the printed column', () => {
-  render(<DetailTabs doc={DOC} />)
-  fireEvent.click(screen.getByRole('tab', { name: 'Lines' }))
-  expect(screen.getByText('42.3729')).toBeInTheDocument()
-  expect(screen.getByText('50')).toBeInTheDocument()
+  render(<DetailSections doc={DOC} />)
+  expect(screen.getByText('S/ 42.3729')).toBeInTheDocument()
+  expect(screen.getByText('S/ 50.00')).toBeInTheDocument()
   expect(
     screen.getByRole('columnheader', { name: 'Unit price with IGV (Printed)' }),
   ).toBeInTheDocument()
@@ -103,19 +102,8 @@ test('does not show derived prices without the IGV flag', () => {
       }}
     />,
   )
-  expect(screen.queryByText('42.3729')).not.toBeInTheDocument()
-  expect(screen.getByText('Unit price (Printed)')).toBeInTheDocument()
-})
-
-test('detail choices use a select below tablet width', async () => {
-  vi.stubGlobal(
-    'matchMedia',
-    vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
-  )
-  render(<DetailTabs doc={DOC} />)
-  expect(await screen.findByRole('combobox', { name: 'Detail view' })).toBeInTheDocument()
-  expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
-  vi.unstubAllGlobals()
+  expect(screen.queryByText('S/ 42.3729')).not.toBeInTheDocument()
+  expect(screen.getByRole('columnheader', { name: 'Unit price (Printed)' })).toBeInTheDocument()
 })
 
 test('cancel discards edits and an unchanged save sends nothing', async () => {
@@ -138,4 +126,67 @@ test('a failed save retains the edited row', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Save line 1' }))
   await waitFor(() => expect(correct).toHaveBeenCalled())
   expect(screen.getByLabelText('Line 1 Quantity')).toHaveValue('3')
+})
+
+test.each([
+  ['en', 'Unit'],
+  ['es', 'Unidad'],
+])('translates known units in %s', async (language, label) => {
+  await i18n.changeLanguage(language)
+  render(<LinesTable doc={DOC} />)
+  expect(screen.getByText(label, { selector: 'td' })).toBeInTheDocument()
+})
+
+test('preserves unknown unit codes', () => {
+  render(<LinesTable doc={{ ...DOC, lines: [{ ...DOC.lines[0]!, unit: 'custom-code' }] }} />)
+  expect(screen.getByText('custom-code')).toBeInTheDocument()
+})
+
+test.each(['en', 'es'])(
+  'renders the Items count and explanation tooltip in %s',
+  async (language) => {
+    await i18n.changeLanguage(language)
+    render(<DetailSections doc={DOC} />)
+    const section = screen.getByRole('region', { name: i18n.t('detail.items') })
+    expect(
+      within(section).getByRole('heading', {
+        name: i18n.t('common.tableSectionCount', {
+          label: i18n.t('detail.items'),
+          count: DOC.lines.length,
+        }),
+      }),
+    ).toBeInTheDocument()
+    expect(section.querySelector('[data-slot="card"]')).toBeNull()
+    expect(within(section).queryByText(i18n.t('detail.derivedPrices'))).not.toBeInTheDocument()
+    fireEvent.focus(within(section).getByRole('button', { name: i18n.t('detail.derivedPrices') }))
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(i18n.t('detail.derivedPrices'))
+  },
+)
+
+test('edits an Item in the phone sheet and sends only the changed field', async () => {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+  )
+  render(<DetailSections doc={DOC} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Edit line 1' }))
+  const sheet = await screen.findByRole('dialog', { name: 'Edit line 1' })
+  expect(within(screen.getByRole('table', { hidden: true })).queryByRole('textbox')).toBeNull()
+  fireEvent.change(within(sheet).getByLabelText('Quantity'), { target: { value: '3' } })
+  fireEvent.click(within(sheet).getByRole('button', { name: i18n.t('detail.sectionSave') }))
+  await waitFor(() =>
+    expect(correct).toHaveBeenCalledWith({ fields: {}, lines: [{ id: 'line-1', quantity: '3' }] }),
+  )
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+})
+
+test.each(['en', 'es'])('short Items headers expose their full names in %s', async (language) => {
+  await i18n.changeLanguage(language)
+  render(<LinesTable doc={DOC} />)
+  const fullName = `${i18n.t('prices.unitWith')} (${i18n.t('prices.printed')})`
+  const header = screen.getByRole('columnheader', { name: fullName })
+  expect(header).toHaveTextContent(i18n.t('prices.short.unitWith'))
+  expect(header).not.toHaveTextContent(i18n.t('prices.printed'))
+  fireEvent.focus(within(header).getByLabelText(fullName))
+  expect(await screen.findByRole('tooltip')).toHaveTextContent(fullName)
 })

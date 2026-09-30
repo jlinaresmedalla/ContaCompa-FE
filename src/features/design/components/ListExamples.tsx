@@ -1,6 +1,6 @@
 import { Check, Clock, LoaderCircle, TriangleAlert, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Badge, Card, Skeleton } from '@/components/atoms'
+import { Badge, Skeleton } from '@/components/atoms'
 import { DesignSection } from './DesignSection'
 
 const STATUSES = [
@@ -26,8 +26,8 @@ export function ListExamples() {
           ))}
         </div>
       </DesignSection>
-      <DesignSection name="ListRow">
-        <Card className="overflow-hidden p-0">
+      <DesignSection name="ListRow" framed={false}>
+        <div className="overflow-hidden rounded-card border border-border bg-card">
           <ul>
             {STATUSES.map(({ name, tone, Icon }) => (
               <li
@@ -50,7 +50,7 @@ export function ListExamples() {
               <Skeleton className="h-chip w-20" />
             </li>
           </ul>
-        </Card>
+        </div>
       </DesignSection>
     </>
   )

@@ -10,8 +10,10 @@ function readPreviewVisible(): boolean {
   }
 }
 
-export function usePreviewToggle() {
-  const [previewVisible, setPreviewVisible] = useState(readPreviewVisible)
+export function usePreviewToggle(phone = false) {
+  const [storedVisible, setStoredVisible] = useState(readPreviewVisible)
+  const [phoneVisible, setPhoneVisible] = useState(false)
+  const previewVisible = phone ? phoneVisible : storedVisible
   const togglePreview = () => {
     const next = !previewVisible
     try {
@@ -19,7 +21,8 @@ export function usePreviewToggle() {
     } catch {
       // Private mode: the preference lasts only until this page unmounts.
     }
-    setPreviewVisible(next)
+    setStoredVisible(next)
+    if (phone) setPhoneVisible(next)
   }
   return { previewVisible, togglePreview }
 }

@@ -12,6 +12,7 @@ import { TokenSections } from './components/TokenSections'
 
 const COMPONENT_HEADING_LEVEL = 3
 const LEVEL_HEADING_LEVEL = 2
+const RESPONSIVE_SAMPLE_COUNT = 2
 
 beforeEach(() => {
   localStorage.clear()
@@ -56,6 +57,8 @@ test('Design renders every level and its shared component states without HTTP re
       'Input',
       'Select',
       'Stat',
+      'Stat row',
+      'Filter pills',
       'Segmented',
       'EmptyState',
       'PageHeader',
@@ -75,6 +78,9 @@ test('Design renders every level and its shared component states without HTTP re
       'Bottom sheet',
       'List row',
       'Status chip',
+      'More actions and confirmation',
+      'Language and theme menus',
+      'Observations and preview column',
     ],
     Templates: ['Public header', 'Public layout', 'App layout'],
   }
@@ -94,7 +100,7 @@ test('Design renders every level and its shared component states without HTTP re
     '--control-touch-height',
     '--stat-card-height',
     '--list-row-height',
-    '--table-row-height',
+    '--table-row-compact-height',
     '--card-radius',
     '--focus-width',
   ]) {
@@ -110,7 +116,11 @@ test('Design renders every level and its shared component states without HTTP re
   expect(screen.getAllByRole('button', { name: 'Primary · Icon button' }).length).toBeGreaterThan(0)
   expect(screen.getAllByText('CC').length).toBeGreaterThan(0)
   expect((await screen.findAllByRole('combobox')).length).toBeGreaterThan(0)
-  expect(screen.getAllByRole('radiogroup', { name: 'Theme' })[0]).toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: /^Theme:/ })[0]).toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: 'More actions' }).length).toBeGreaterThan(1)
+  expect(screen.getAllByText(/The printed total differs from the item totals\./)).toHaveLength(
+    RESPONSIVE_SAMPLE_COUNT,
+  )
   await act(async () => {})
   expect(request).not.toHaveBeenCalled()
   expect(xhr).not.toHaveBeenCalled()

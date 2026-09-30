@@ -2,7 +2,6 @@ import { ARCHITECTURE } from './architecture-data'
 
 export const GEOMETRY = {
   width: 1210,
-  minWidth: 1000,
   height: 630,
   half: 2,
   padding: 20,
@@ -13,6 +12,8 @@ export const GEOMETRY = {
   font: 14,
   smallFont: 11,
   stroke: 2,
+  labelStroke: 6,
+  labelOffset: 12,
   dim: 0.2,
   arrow: 8,
 } as const
@@ -55,6 +56,6 @@ export function connectionLine(connection: {
     x2,
     y2,
     labelX: connection.labelAt?.[0] ?? (x1 + x2) / GEOMETRY.half,
-    labelY: connection.labelAt?.[1] ?? (y1 + y2) / GEOMETRY.half,
+    labelY: (connection.labelAt?.[1] ?? (y1 + y2) / GEOMETRY.half) - GEOMETRY.labelOffset,
   }
 }

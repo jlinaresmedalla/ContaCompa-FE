@@ -5,6 +5,9 @@ export const ES_COMMON: Pick<
   'common' | 'errors' | 'notifications' | 'pageStates' | 'validation'
 > = {
   common: {
+    tableSectionCount: '{{label}} · {{count}}',
+    purchaseDocs_one: '{{count}} comprobante',
+    purchaseDocs_other: '{{count}} comprobantes',
     selectGuidance:
       'Usa las flechas arriba y abajo para moverte, Intro para seleccionar, Escape para cerrar e izquierda o Retroceso para quitar valores seleccionados.',
     selectSelected: 'Seleccionado: {{label}}.',

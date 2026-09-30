@@ -1,11 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { i18n } from '@/app/i18n'
+import { RAIL_WIDTH_PX } from '@/lib/breakpoints'
 import { ARCHITECTURE } from '../architecture-data'
 import { GEOMETRY } from '../architecture-layout'
 import { ArchitectureView } from './ArchitectureView'
 
+afterEach(() => vi.unstubAllGlobals())
+
 beforeEach(async () => {
+  vi.stubGlobal('innerWidth', RAIL_WIDTH_PX)
   await i18n.changeLanguage('en')
 })
 
@@ -73,3 +77,37 @@ test('flow labels and node roles use native Spanish copy', async () => {
     screen.getByText('El comprobante y su procesamiento se registran en una sola transacción.'),
   ).toBeVisible()
 })
+
+const PHONE_WIDTH_PX = 375
+
+test.each(['en', 'es'])(
+  'phones render the complete text alternative in %s without the SVG',
+  async (language) => {
+    vi.stubGlobal('innerWidth', PHONE_WIDTH_PX)
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockReturnValue({
+        matches: true,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }),
+    )
+    await i18n.changeLanguage(language)
+    const { container } = render(<ArchitectureView />)
+    expect(container.querySelector('svg[role="group"]')).not.toBeInTheDocument()
+    expect(screen.queryByRole('group')).not.toBeInTheDocument()
+    for (const component of ARCHITECTURE.components) {
+      expect(screen.getByText(i18n.t(`home.diagram.nodes.${component.id}.role`))).toBeVisible()
+    }
+    for (const connection of ARCHITECTURE.connections) {
+      expect(
+        screen.getByText(
+          (_, element) =>
+            element?.tagName === 'LI' &&
+            element.textContent ===
+              `${i18n.t(`home.diagram.nodes.${connection.from}.label`)} → ${i18n.t(`home.diagram.nodes.${connection.to}.label`)}: ${i18n.t(`home.diagram.connections.${connection.id}`)}`,
+        ),
+      ).toBeVisible()
+    }
+  },
+)

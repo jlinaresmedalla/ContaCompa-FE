@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 import { PATHS } from '@/app/router/paths'
-import { PageHeader, EmptyState, IconButton, Segmented } from '@/components/molecules'
+import { PageHeader, EmptyState, IconButton, FilterPills } from '@/components/molecules'
 
 import { Badge, Button, Input } from '@/components/atoms'
 
@@ -11,7 +11,7 @@ import { toApiError } from '@/lib/http'
 
 import { PAGE_SIZE } from './api'
 import { DocumentsTable } from './components/DocumentsTable'
-import { ObservationReport, ObservationStats } from './components/ObservationReport'
+import { ObservationStats } from './components/ObservationReport'
 import {
   OBSERVATION_FILTERS,
   useDocumentSearch,
@@ -32,9 +32,9 @@ export function DocumentsPage() {
     <div className="min-w-0 space-y-6">
       <PageHeader title={t('nav.purchaseDocs')} description={t('pageStates.documents')} />
       <ObservationStats />
-      <div className="flex flex-wrap items-center gap-2 [&>[role=radiogroup]]:max-w-full [&>[role=radiogroup]]:flex-wrap">
-        <div className="w-full min-w-0 lg:w-[35rem] [&_button]:h-control">
-          <Segmented<ObservationFilter>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <div className="min-w-0 w-full xl:w-auto xl:flex-1">
+          <FilterPills<ObservationFilter>
             label={t('documents.filterLabel')}
             value={filters.observations}
             options={OBSERVATION_FILTERS.map((value) => ({
@@ -57,9 +57,9 @@ export function DocumentsPage() {
             />
           </span>
         ) : null}
-        <div className="flex w-full min-w-0 items-center gap-2 lg:ml-auto lg:w-auto">
+        <div className="flex min-w-0 w-full items-center gap-2 xl:w-auto">
           <Input
-            className="min-w-0 flex-1 lg:w-64"
+            className="min-w-0 flex-1 xl:w-[22rem]"
             type="search"
             aria-label={t('documents.searchPage')}
             placeholder={t('documents.searchPage')}
@@ -134,7 +134,6 @@ export function DocumentsPage() {
           onClick={() => setOffset(docs.data!.next_offset!)}
         />
       </div>
-      <ObservationReport onPickCode={(code) => setFilters({ observations: 'all', code })} />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { Button } from '@/components/atoms'
 import { EmptyState } from '@/components/molecules'
 import { DataTable, Toaster } from '@/components/organisms'
 import { SidebarSection } from './SidebarSection'
+import { ResponsivePatterns } from './ResponsivePatterns'
 import { OrganismExtras } from './OrganismExtras'
 import { notifySuccess, notifyError } from '@/lib/notify'
 
@@ -13,8 +14,8 @@ export function OrganismsSection() {
   const { t } = useTranslation()
   const columns: ColumnDef<{ number: string; type: string; total: string }>[] = [
     { accessorKey: 'number', header: t('documents.columns.number') },
-    { accessorKey: 'type', header: t('documents.columns.type') },
-    { accessorKey: 'total', header: t('documents.columns.total') },
+    { accessorKey: 'type', header: t('documents.columns.type'), meta: { layout: 'text' } },
+    { accessorKey: 'total', header: t('documents.columns.total'), meta: { layout: 'numeric' } },
   ]
   const rows = [
     { number: 'F001-0042', type: t('docType.invoice'), total: 'PEN 118.00' },
@@ -33,13 +34,24 @@ export function OrganismsSection() {
   )
   return (
     <div className="space-y-10">
-      <DesignSection name="DataTable">
+      <DesignSection name="DataTable" framed={false}>
         <div className="min-w-0 space-y-6">
           <DataTable columns={columns} data={rows} isLoading={false} empty={empty} />
+          <div className="max-w-xs">
+            <DataTable columns={columns} data={rows} isLoading={false} empty={empty} />
+          </div>
           <h3 className="text-sm font-medium">{t('design.loading')}</h3>
-          <DataTable columns={columns} data={undefined} isLoading empty={empty} />
+          {(['w-full', 'max-w-xs'] as const).map((width) => (
+            <div key={width} className={width}>
+              <DataTable columns={columns} data={undefined} isLoading empty={empty} />
+            </div>
+          ))}
           <h3 className="text-sm font-medium">{t('design.emptyState')}</h3>
-          <DataTable columns={columns} data={[]} isLoading={false} empty={empty} />
+          {(['w-full', 'max-w-xs'] as const).map((width) => (
+            <div key={width} className={width}>
+              <DataTable columns={columns} data={[]} isLoading={false} empty={empty} />
+            </div>
+          ))}
         </div>
       </DesignSection>
       <DesignSection name="Toast">
@@ -54,6 +66,7 @@ export function OrganismsSection() {
       </DesignSection>
       <SidebarSection />
       <OrganismExtras />
+      <ResponsivePatterns />
       <Toaster />
     </div>
   )
