@@ -4,10 +4,10 @@ import { TableSectionLabel } from '@/components/molecules'
 import { DataTable, PreferenceSwitches } from '@/components/organisms'
 import { DeleteDocAction } from '@/features/documents/components/DeleteDocAction'
 import { InvoiceCard } from '@/features/documents/components/InvoiceCard'
-import type { PurchaseDocDetail } from '@/features/documents/types'
+import type { PurchaseDocDetail } from '@/features/documents/types/purchaseDocs'
 import { DesignSection } from './DesignSection'
-import { useDesignEdit } from './use-design-edit'
-import { useDesignSheet } from './use-design-sheet'
+import { useDesignEdit } from '../hooks/useDesignEdit'
+import { useDesignSheet } from '../hooks/useDesignSheet'
 
 const SAMPLE_DOC: PurchaseDocDetail = {
   id: 'design-only',

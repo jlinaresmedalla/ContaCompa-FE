@@ -1,4 +1,4 @@
 export { AppLayout } from './AppLayout'
 export { PublicLayout } from './PublicLayout'
-export { useAppDestination } from './use-app-destination'
+export { useAppDestination } from './useAppDestination'
 export { PublicHeader } from './PublicHeader'

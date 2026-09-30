@@ -8,11 +8,11 @@ import { AppLayout } from '@/components/templates'
 import { PublicLayout } from '@/components/templates'
 import { PageSkeleton } from '@/components/molecules/PageSkeleton'
 import { FilePreviewSkeleton } from '@/features/documents/components/FilePreviewSkeleton'
-import { API_KEY_STORE } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/apiKey'
 
 import { lazyPage } from './lazyPage'
 
-vi.mock('@/features/session/SessionPanel', () => ({ SessionPanel: () => null }))
+vi.mock('@/features/session/components/SessionPanel', () => ({ SessionPanel: () => null }))
 
 function PrivateShell() {
   return (

@@ -5,7 +5,7 @@ import { PATHS } from '@/app/router/paths'
 import { IconButton } from '@/components/molecules'
 import { Button, Backdrop, Card, Input } from '@/components/atoms'
 import { PublicHeader } from '@/components/templates'
-import { useSignIn } from './useSignIn'
+import { useSignIn } from './hooks/useSignIn'
 
 export function SignInPage() {
   const { t } = useTranslation()

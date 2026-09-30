@@ -3,9 +3,26 @@ import { expect, test, vi } from 'vitest'
 
 import { AppProviders } from './AppProviders'
 
+// Keep the DOM provider on Vitest's ESM router context instead of its CJS copy.
+vi.mock('react-router/dom', async () => {
+  const { RouterProvider } = await import('react-router')
+  const { flushSync } = await import('react-dom')
+  return {
+    RouterProvider: (props: Parameters<typeof RouterProvider>[0]) => (
+      <RouterProvider
+        {...props}
+        flushSync={(callback) => {
+          flushSync(callback)
+          return undefined
+        }}
+      />
+    ),
+  }
+})
+
 vi.mock('@/features/home/HomePage', () => ({ HomePage: () => <p>Home route</p> }))
 vi.mock('@/features/design/DesignPage', () => ({ DesignPage: () => <p>Design route</p> }))
-vi.mock('@/features/session/SessionLayout', () => {
+vi.mock('@/features/session/components/SessionLayout', () => {
   throw new Error('Public navigation must not load the session runtime')
 })
 vi.mock('@/lib/http', () => {

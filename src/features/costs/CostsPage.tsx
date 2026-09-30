@@ -13,16 +13,16 @@ import {
   IconButton,
   TableSectionLabel,
 } from '@/components/molecules'
-import { useCostPeriod } from './use-cost-period'
+import { useCostPeriod } from './hooks/useCostPeriod'
 import { Button, Skeleton, Card, CardTitle, TableRow, Table } from '@/components/atoms'
 
 import { number } from '@/lib/format'
-import { formatCost } from '@/lib/money-format'
+import { formatCost } from '@/lib/moneyFormat'
 import { toApiError } from '@/lib/http'
 
 import { DailyChart } from './components/DailyChart'
-import { useCostReport } from './hooks'
-import type { CostLine } from './types'
+import { useCostReport } from './hooks/useCostReport'
+import type { CostLine } from './types/costs'
 
 const QUOTE_DOCUMENT_COUNT = 1000
 const MODEL_SKELETON_COUNT = 5

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/molecules'
 import { cn } from '@/lib/cn'
 import { Button } from '@/components/atoms'
-import type { InvoiceEdit } from '../use-invoice-edit'
+import type { InvoiceEdit } from '../hooks/useInvoiceEdit'
 
 export function InvoiceEditActions({
   edit,

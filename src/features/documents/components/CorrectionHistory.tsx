@@ -2,7 +2,7 @@ import { Table } from '@/components/atoms'
 import { Pencil } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { dateTime } from '@/lib/format'
-import type { PurchaseDocDetail } from '../types'
+import type { PurchaseDocDetail } from '../types/purchaseDocs'
 
 const COLUMNS = ['field', 'before', 'after', 'changed'] as const
 const CELL = 'px-3.5 py-2'

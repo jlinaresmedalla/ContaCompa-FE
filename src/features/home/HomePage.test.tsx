@@ -5,7 +5,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { i18n } from '@/app/i18n'
 import { PATHS } from '@/app/router/paths'
 import { PublicLayout } from '@/components/templates'
-import { API_KEY_STORE } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/apiKey'
 import { http } from '@/lib/http'
 import { applyTheme } from '@/lib/theme'
 

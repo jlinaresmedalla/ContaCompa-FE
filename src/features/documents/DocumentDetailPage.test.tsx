@@ -3,8 +3,8 @@ import { beforeEach, afterEach, expect, test, vi } from 'vitest'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { TABLET_WIDTH_PX } from '@/lib/breakpoints'
 import { i18n } from '@/app/i18n'
-import type { PurchaseDocDetail } from './types'
-import { STORAGE_KEYS } from './use-preview-toggle'
+import type { PurchaseDocDetail } from './types/purchaseDocs'
+import { STORAGE_KEYS } from './hooks/usePreviewToggle'
 import { DocumentDetailPage } from './DocumentDetailPage'
 
 const MOCKS = vi.hoisted(() => ({ preview: vi.fn(), remove: vi.fn() }))
@@ -28,9 +28,13 @@ const DOC: PurchaseDocDetail = {
   exported_at: null,
   documents: [{ id: 'file-1', filename: 'original.pdf', source_kind: 'pdf_text' }],
 }
-vi.mock('./hooks', () => ({
+vi.mock('./hooks/useCorrectDoc', () => ({
   useCorrectDoc: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}))
+vi.mock('./hooks/usePurchaseDoc', () => ({
   usePurchaseDoc: () => ({ data: DOC }),
+}))
+vi.mock('./hooks/useDeleteDoc', () => ({
   useDeleteDoc: () => ({ mutate: MOCKS.remove, isPending: false }),
 }))
 vi.mock('./components/FilePreview', () => ({

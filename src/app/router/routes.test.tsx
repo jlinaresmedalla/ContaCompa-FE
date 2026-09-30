@@ -9,9 +9,11 @@ import { http } from '@/lib/http'
 
 import { i18n } from '@/app/i18n'
 import { SESSION_API } from '@/features/session'
-import { API_KEY_STORE } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/apiKey'
 
 import { ROUTES } from './routes'
+
+const DESKTOP_WIDTH_PX = 1280
 
 const KEY_LIFETIME_MS = 3_600_000
 
@@ -27,11 +29,13 @@ vi.mock('@/features/costs/CostsPage', () => ({ CostsPage: () => <p>page:costs</p
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 let meSpy = vi.fn()
 
 beforeEach(() => {
+  vi.stubGlobal('innerWidth', DESKTOP_WIDTH_PX)
   void i18n.changeLanguage('en')
   // Private routes start with a stored key that /v1/me accepts.
   localStorage.clear()
@@ -59,7 +63,7 @@ test('sidebar lists Extraction and Monitor, not Assistant', async () => {
   expect(nav).toHaveTextContent('Extraction')
   expect(nav).toHaveTextContent('Monitor')
   expect(screen.queryByRole('link', { name: /assistant/i })).toBeNull()
-  expect(screen.getByRole('link', { name: 'Extraction' })).toHaveAttribute('aria-current', 'page')
+  expect(screen.getByRole('link', { name: 'Purchase docs' })).toHaveAttribute('aria-current', 'page')
 })
 
 test.each([
@@ -89,9 +93,9 @@ test('the purchase doc detail keeps the Purchase docs sidebar page current', asy
   expect(screen.getByRole('link', { name: 'Jobs' })).not.toHaveAttribute('aria-current')
 })
 
-test('Monitor has a single page, so no tabs, and its module link is current', async () => {
+test('Monitor has a single page, so no tabs, and its page link is current', async () => {
   renderAt('/monitor/costs')
-  expect(await screen.findByRole('link', { name: 'Monitor' })).toHaveAttribute(
+  expect(await screen.findByRole('link', { name: 'Costs' })).toHaveAttribute(
     'aria-current',
     'page',
   )
@@ -115,10 +119,11 @@ test('a bare /monitor opens Costs', async () => {
 test('language, theme and sign-out appear only in the avatar menu', async () => {
   renderAt('/extraction/purchase-docs')
   const avatar = await screen.findByRole('button', { name: 'Company account' })
-  expect(screen.queryByRole('group', { name: 'Language' })).toBeNull()
+  expect(screen.queryByRole('button', { name: /^Language:/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /^Theme:/ })).toBeNull()
   fireEvent.keyDown(avatar, { key: 'Enter' })
-  expect(await screen.findByRole('group', { name: 'Language' })).toBeInTheDocument()
-  expect(screen.getByRole('group', { name: 'Theme' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: /^Language:/ })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /^Theme:/ })).toBeInTheDocument()
   expect(screen.getByRole('menuitem', { name: 'Sign out' })).toBeInTheDocument()
 })
 
@@ -171,7 +176,7 @@ test('/design is public without a stored key', async () => {
 
 // Isolate Home navigation from the private guard: /v1/me still validates private pages.
 test.each([null, 'stored-key'])(
-  'both Go to app links navigate by storage with key %s without an HTTP request',
+  'the Go to app link navigates by storage with key %s without an HTTP request',
   async (key) => {
     if (key === null) API_KEY_STORE.clear()
     else API_KEY_STORE.set(key)
@@ -188,17 +193,19 @@ test.each([null, 'stored-key'])(
         <RouterProvider router={router} />
       </QueryClientProvider>,
     )
-    for (const linkIndex of [0, 1]) {
-      const link = screen.getAllByRole('link', { name: 'Go to app →' })[linkIndex]
-      if (!link) throw new Error('Missing Home app link')
-      fireEvent.click(link)
-      await waitFor(() =>
-        expect(router.state.location.pathname).toBe(key ? '/extraction/purchase-docs' : '/sign-in'),
-      )
-      await act(async () => {
-        await router.navigate('/')
-      })
-    }
+    const links = screen.getAllByRole('link', { name: 'Go to app →' })
+    expect(links).toHaveLength(1)
+    fireEvent.click(screen.getByRole('link', { name: 'Go to app →' }))
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(key ? '/extraction/purchase-docs' : '/sign-in'),
+    )
+    await act(async () => {
+      await router.navigate('/')
+    })
+    expect(screen.getByRole('link', { name: 'Go to app →' })).toHaveAttribute(
+      'href',
+      key ? '/extraction/purchase-docs' : '/sign-in',
+    )
     expect(request).not.toHaveBeenCalled()
     expect(get).not.toHaveBeenCalled()
     expect(post).not.toHaveBeenCalled()

@@ -5,10 +5,10 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { i18n } from '@/app/i18n'
 import { PATHS } from '@/app/router/paths'
-import { API_KEY_STORE } from '@/lib/api-key'
-import { SESSION_API } from './api'
+import { API_KEY_STORE } from '@/lib/apiKey'
+import { SESSION_API } from './api/sessionApi'
 import { SignInPage } from './SignInPage'
-import type { Me } from './types'
+import type { Me } from './types/session'
 
 const COMPANY: Me = {
   company: { ruc: '20543306771', legal_name: 'Acme SAC' },

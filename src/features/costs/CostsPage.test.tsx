@@ -4,9 +4,9 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, afterEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
-import { COST_API } from './api'
+import { COST_API } from './api/costsApi'
 import { CostsPage } from './CostsPage'
-import type { CostLine, CostReport } from './types'
+import type { CostLine, CostReport } from './types/costs'
 
 const DEFAULT_DAYS = 30
 const SHORT_DAYS = 7

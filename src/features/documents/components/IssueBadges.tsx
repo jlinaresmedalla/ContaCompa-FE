@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge } from '@/components/atoms'
 
-import { observationLabel } from '../observations'
-import type { Issue } from '../types'
+import { observationLabel } from '../utils/observations'
+import type { Issue } from '../types/purchaseDocs'
 
 export function IssueBadges({ issues }: { issues: Issue[] }) {
   const { t } = useTranslation()

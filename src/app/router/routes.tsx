@@ -5,25 +5,25 @@ import { PATHS } from '@/app/router/paths'
 import { PublicLayout } from '@/components/templates'
 import { PageSkeleton } from '@/components/molecules/PageSkeleton'
 import { lazyPage } from '@/lib/lazyPage'
-import { API_KEY_STORE } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/apiKey'
 
 const SessionLayout = lazyPage<object>(
   async () => {
-    const module = await import('@/features/session/SessionLayout')
+    const module = await import('@/features/session/components/SessionLayout')
     return { default: module.SessionLayout }
   },
   <PageSkeleton />,
 )
 const PrivateLayout = lazyPage<object>(
   async () => {
-    const module = await import('@/features/session/PrivateLayout')
+    const module = await import('@/features/session/components/PrivateLayout')
     return { default: module.PrivateLayout }
   },
   <PageSkeleton />,
 )
 const PrivateRoute = lazyPage<object>(
   async () => {
-    const module = await import('@/features/session/PrivateRoute')
+    const module = await import('@/features/session/components/PrivateRoute')
     return { default: module.PrivateRoute }
   },
   <PageSkeleton />,

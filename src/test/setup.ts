@@ -13,6 +13,19 @@ beforeAll(async () => {
 // Vitest runs without globals, so Testing Library cannot register its own cleanup.
 afterEach(cleanup)
 
+if (!window.matchMedia) {
+  window.matchMedia = (query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener() {},
+    removeListener() {},
+    addEventListener() {},
+    removeEventListener() {},
+    dispatchEvent: () => false,
+  })
+}
+
 if (!Element.prototype.hasPointerCapture) {
   Element.prototype.hasPointerCapture = () => false
 }

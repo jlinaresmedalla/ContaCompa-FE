@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/components/atoms'
 import { Stat, StatRow } from '@/components/molecules'
 
-import type { JobStatus } from '../types'
+import type { JobStatus } from '../types/jobs'
 
 const STATUSES: JobStatus[] = ['queued', 'processing', 'done', 'failed', 'dead']
 

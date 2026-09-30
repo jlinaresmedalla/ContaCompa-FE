@@ -2,7 +2,7 @@ import axios, { isAxiosError, isCancel } from 'axios'
 
 import { ENV } from '@/app/config/env'
 import { i18n } from '@/app/i18n'
-import { API_KEY_STORE } from '@/lib/api-key'
+import { API_KEY_STORE } from '@/lib/apiKey'
 
 const REQUEST_TIMEOUT_MS = 180_000
 const UNAUTHORIZED_STATUS = 401

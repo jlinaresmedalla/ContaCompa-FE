@@ -6,10 +6,10 @@ import {
   BottomSheet,
 } from '@/components/organisms'
 import { Button } from '@/components/atoms'
-import { InvoiceEditField } from '@/features/documents/components/InvoiceEditField'
+import { InvoiceEditField } from '@/features/documents/components/InvoiceCard'
 import { InvoiceEditActions } from '@/features/documents/components/InvoiceEditActions'
-import { useDesignEdit } from './use-design-edit'
-import { useDesignSheet } from './use-design-sheet'
+import { useDesignEdit } from '../hooks/useDesignEdit'
+import { useDesignSheet } from '../hooks/useDesignSheet'
 import { DesignSection } from './DesignSection'
 import { ListExamples } from './ListExamples'
 

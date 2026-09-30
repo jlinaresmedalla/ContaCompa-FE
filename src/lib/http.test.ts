@@ -2,7 +2,7 @@ import { AxiosError, CanceledError, type InternalAxiosRequestConfig } from 'axio
 import { waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { API_KEY_STORE } from './api-key'
+import { API_KEY_STORE } from './apiKey'
 import { cancelCompanyRequests, http, setUnauthorizedHandler } from './http'
 
 const FORBIDDEN_STATUS = 403

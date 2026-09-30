@@ -1,4 +1,4 @@
-import { PAGE_SIZE } from './api'
+import { PAGE_SIZE } from './api/purchaseDocsApi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
@@ -6,12 +6,12 @@ import { beforeEach, expect, test, vi } from 'vitest'
 
 import { i18n } from '@/app/i18n'
 
-import { DOCUMENT_API, DOCUMENT_KEYS } from './api'
+import { DOCUMENT_API, DOCUMENT_KEYS } from './api/purchaseDocsApi'
 import { DocumentsPage } from './DocumentsPage'
 
 const FILTERED_DOCUMENT_COUNT = 2
 
-vi.mock('./components/ObservationReport', () => ({
+vi.mock('./components/ObservationStats', () => ({
   ObservationStats: () => null,
 }))
 

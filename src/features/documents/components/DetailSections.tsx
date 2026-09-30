@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { TableSectionLabel } from '@/components/molecules'
-import type { PurchaseDocDetail } from '../types'
+import type { PurchaseDocDetail } from '../types/purchaseDocs'
 import { LinesTable } from './LinesTable'
 import { CorrectionHistory } from './CorrectionHistory'
 

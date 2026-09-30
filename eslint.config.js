@@ -32,7 +32,14 @@ function levelImportRule(level, files, blockSiblings) {
                   `**/${restricted}`,
                   `**/${restricted}/**`,
                 ]),
-                ...(blockSiblings ? ['./*', '../*'] : []),
+                ...(blockSiblings
+                  ? [
+                      ...(blockSiblings === 'folder' ? [] : ['./*']),
+                      '../*',
+                      '@/components/atoms/**',
+                      '**/atoms/**',
+                    ]
+                  : []),
                 ...LEGACY_COMPONENT_ROOTS.flatMap((legacy) => [
                   `@/components/${legacy}`,
                   `@/components/${legacy}/**`,
@@ -82,6 +89,100 @@ tseslint.plugin.rules['no-magic-numbers'] = {
   },
 }
 
+// Spec 008 / ADR 0032: report naming drift while files migrate in batches.
+const LOCAL_PLUGIN = {
+  rules: {
+    'file-name': {
+      meta: {
+        type: 'suggestion',
+        schema: [],
+        messages: { case: 'File "{{file}}" must use {{expected}} naming.' },
+      },
+      create(context) {
+        return {
+          'Program:exit'(node) {
+            const filename = context.filename.replaceAll('\\', '/')
+            const file = filename.split('/').at(-1)
+            if (
+              file === 'index.ts' ||
+              file === 'main.tsx' ||
+              filename.endsWith('/src/test/setup.ts') ||
+              file.endsWith('.d.ts')
+            )
+              return
+            const base = file.split('.')[0]
+            const isPascalBinding = (name) => /^[A-Z]/.test(name) && /[a-z]/.test(name)
+            const bindingNames = (binding) => {
+              if (!binding) return []
+              if (binding.type === 'Identifier') return [binding.name]
+              if (binding.type === 'RestElement') return bindingNames(binding.argument)
+              if (binding.type === 'AssignmentPattern') return bindingNames(binding.left)
+              if (binding.type === 'ArrayPattern') return binding.elements.flatMap(bindingNames)
+              if (binding.type === 'ObjectPattern')
+                return binding.properties.flatMap((property) =>
+                  bindingNames(
+                    property.type === 'RestElement' ? property.argument : property.value,
+                  ),
+                )
+              return []
+            }
+            const typeBindings = new Set()
+            for (const statement of node.body) {
+              const declaration = statement.declaration ?? statement
+              if (['TSTypeAliasDeclaration', 'TSInterfaceDeclaration'].includes(declaration.type))
+                typeBindings.add(declaration.id.name)
+            }
+            const hasPascalExport = node.body.some((statement) => {
+              if (statement.type === 'ExportDefaultDeclaration') {
+                const declaration = statement.declaration
+                if (
+                  ['FunctionDeclaration', 'ClassDeclaration', 'Identifier'].includes(
+                    declaration.type,
+                  )
+                )
+                  return bindingNames(declaration.id ?? declaration).some(isPascalBinding)
+                return false
+              }
+              if (statement.type !== 'ExportNamedDeclaration' || statement.exportKind === 'type')
+                return false
+              const declaration = statement.declaration
+              if (declaration?.type === 'VariableDeclaration')
+                return declaration.declarations
+                  .flatMap((item) => bindingNames(item.id))
+                  .some(isPascalBinding)
+              if (['FunctionDeclaration', 'ClassDeclaration'].includes(declaration?.type))
+                return bindingNames(declaration.id).some(isPascalBinding)
+              return statement.specifiers.some((specifier) => {
+                if (specifier.exportKind === 'type') return false
+                if (!statement.source && typeBindings.has(specifier.local?.name)) return false
+                return isPascalBinding(specifier.exported.name ?? specifier.exported.value)
+              })
+            })
+            const hook = /^use(?:[A-Z]|-)/.test(base)
+            const test = /\.test\.[^.]+$/.test(file)
+            const pattern = hook
+              ? /^use[A-Z][A-Za-z0-9]*$/
+              : test
+                ? /^(?:[A-Z][A-Za-z0-9]*|[a-z][A-Za-z0-9]*)$/
+                : hasPascalExport
+                  ? /^[A-Z][A-Za-z0-9]*$/
+                  : /^[a-z][A-Za-z0-9]*$/
+            const expected = hook
+              ? 'useCamelCase'
+              : test
+                ? 'PascalCase, camelCase or useCamelCase'
+                : hasPascalExport
+                  ? 'PascalCase'
+                  : 'camelCase'
+            if (!pattern.test(base))
+              context.report({ node, messageId: 'case', data: { file, expected } })
+          },
+        }
+      },
+    },
+  },
+}
+
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -93,7 +194,9 @@ export default tseslint.config(
       jsxA11y.flatConfigs.recommended,
       ...pluginQuery.configs['flat/recommended'],
     ],
+    plugins: { local: LOCAL_PLUGIN },
     rules: {
+      'local/file-name': 'warn',
       'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
       '@typescript-eslint/no-magic-numbers': [
         'error',
@@ -144,6 +247,10 @@ export default tseslint.config(
   },
   ...COMPONENT_LEVELS.flatMap((level) => [
     levelImportRule(level, [`src/components/${level}/**/*.{ts,tsx}`], level === 'atoms'),
+    // Atom companions may import ./ paths; parent and other-atom imports stay blocked.
+    ...(level === 'atoms'
+      ? [levelImportRule(level, ['src/components/atoms/*/**/*.{ts,tsx}'], 'folder')]
+      : []),
     // The barrel re-exports its atoms and a test imports the atom beside it.
     ...(level === 'atoms'
       ? [

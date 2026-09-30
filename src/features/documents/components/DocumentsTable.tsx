@@ -9,10 +9,10 @@ import { PATHS } from '@/app/router/paths'
 import { Badge } from '@/components/atoms'
 import { IconButton } from '@/components/molecules'
 import { DataTable } from '@/components/organisms'
-import { formatTotal } from '@/lib/money-format'
+import { formatTotal } from '@/lib/moneyFormat'
 
-import { useDeleteDoc } from '../hooks'
-import type { PurchaseDocSummary } from '../types'
+import { useDeleteDoc } from '../hooks/useDeleteDoc'
+import type { PurchaseDocSummary } from '../types/purchaseDocs'
 import { LinePrices } from './LinePrices'
 
 function DeleteButton({ doc }: { doc: PurchaseDocSummary }) {

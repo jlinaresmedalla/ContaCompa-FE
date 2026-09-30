@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { i18n } from '@/app/i18n'
-import { JOBS_API } from './api'
+import { JOBS_API } from './api/jobsApi'
 import { JobsPage } from './JobsPage'
 
 beforeEach(async () => {

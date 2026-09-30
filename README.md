@@ -31,7 +31,7 @@ The API and worker live in [Contacompa-backend](https://github.com/jlinaresmedal
 
 Home renders a lazy interactive React SVG with all components, hosting boundaries and connections. Flow chips highlight Sign-in and keys, Upload path, Extraction job and Pure core; Overview restores everything. Nodes reveal their roles on hover, focus and tap, with a full text alternative in English and Spanish. Phones show the complete text version; wider screens show a fluid diagram using the card surface, with an optional text view. Tech chips and the text toggle stay inside the card. Public header, content and footer share a centered 160 rem cap and fluid padding; top-bar actions remain available at every width.
 
-`src/features/home/architecture-data.ts` is the typed copy of the backend’s `docs/architecture/architecture.archify.json` (coordinates, components, connections, views and cards). Any backend diagram change must update this frontend copy and its translated explanations.
+`src/features/home/utils/architectureData.ts` is the typed copy of the backend’s `docs/architecture/architecture.archify.json` (coordinates, components, connections, views and cards). Any backend diagram change must update this frontend copy and its translated explanations.
 
 ## Tech stack
 
@@ -73,7 +73,7 @@ src/
 │   ├── molecules/    # fields, selects, stats, icon actions, loading feedback
 │   ├── organisms/    # table, sidebar, preferences, account menu, bottom sheet
 │   └── templates/    # public/private shells; account data comes through props
-├── features/     # one folder per capability: api, hooks, types, pages, components
+├── features/     # one folder per capability; populated kind folders below
 │   ├── documents/   # purchase docs list, detail, corrections, export
 │   ├── jobs/        # upload, stat cards, recent-file list, filters, retry
 │   ├── costs/       # cost report
@@ -82,6 +82,10 @@ src/
 │   └── session/     # API key sign-in, route guard, account data and private-shell wrapper
 └── lib/          # HTTP client, key storage, formatting, theme
 ```
+
+Features use `api/`, `hooks/`, `components/`, `schemas/`, `types/` and `utils/` as needed, with one file per resource or concern and no empty folders. API modules use `<resource>Api.ts`; hooks use `useCamelCase.ts`. Pages, page tests and the feature `index.ts` stay at the feature root.
+
+A component with companions uses a PascalCase folder containing `ComponentName.tsx`, its tests, exclusive hooks, `types.ts` when needed, and a public `index.ts`. Components without companions stay flat. Shared feature hooks and page-owned hooks go in `hooks/`; shared component hooks stay at their atomic level. Home diagram data and layout and Design token names live in their feature’s `utils/`. Lazy pages and Design galleries retain separate chunks. The file-name lint rule remains a warning.
 
 ## Environment variables
 

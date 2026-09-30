@@ -8,7 +8,7 @@ import { JobsTable } from './components/JobsTable'
 import { PausedBanner } from './components/PausedBanner'
 import { StatusCounts } from './components/StatusCounts'
 import { UploadDropzone } from './components/UploadDropzone'
-import { useJobsOverview } from './hooks'
+import { useJobsOverview } from './hooks/useJobsOverview'
 
 export function JobsPage() {
   const { t } = useTranslation()

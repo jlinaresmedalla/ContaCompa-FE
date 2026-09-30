@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge, Table } from '@/components/atoms'
 import { number } from '@/lib/format'
-import { formatPrintedPrice, formatDerivedPrice, formatTotal } from '@/lib/money-format'
+import { formatPrintedPrice, formatDerivedPrice, formatTotal } from '@/lib/moneyFormat'
 
-import type { PurchaseDocSummary } from '../types'
+import type { PurchaseDocSummary } from '../types/purchaseDocs'
 
 const CELL = 'px-2 py-1.5 text-right tabular-nums whitespace-nowrap'
 

@@ -9,18 +9,16 @@ import { Badge, Button, Input } from '@/components/atoms'
 
 import { toApiError } from '@/lib/http'
 
-import { PAGE_SIZE } from './api'
+import { PAGE_SIZE } from './api/purchaseDocsApi'
 import { DocumentsTable } from './components/DocumentsTable'
-import { ObservationStats } from './components/ObservationReport'
-import {
-  OBSERVATION_FILTERS,
-  useDocumentSearch,
-  useExportXlsx,
-  useListFilters,
-  usePurchaseDocs,
-} from './hooks'
-import { observationLabel } from './observations'
-import type { ObservationFilter } from './types'
+import { ObservationStats } from './components/ObservationStats'
+import { OBSERVATION_FILTERS } from './hooks/useListFilters'
+import { useDocumentSearch } from './hooks/useDocumentSearch'
+import { useExportXlsx } from './hooks/useExportXlsx'
+import { useListFilters } from './hooks/useListFilters'
+import { usePurchaseDocs } from './hooks/usePurchaseDocs'
+import { observationLabel } from './utils/observations'
+import type { ObservationFilter } from './types/purchaseDocs'
 
 export function DocumentsPage() {
   const { t, i18n } = useTranslation()
