@@ -1,13 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
-import { Badge, Card, Skeleton } from '@/components/atoms'
-
-import { lazyPage } from '@/lib/lazyPage'
-
-const ArchitectureView = lazyPage<object>(
-  () => import('./ArchitectureView').then((module) => ({ default: module.ArchitectureView })),
-  <Skeleton className="h-96 w-full" />,
-)
+import { Badge, Card } from '@/components/atoms'
 
 export function Architecture() {
   const { t } = useTranslation()
